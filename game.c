@@ -1,13 +1,19 @@
+
 /*this is the file which reunites all the functions*/
 /*Brandon Hornbeck*/
 /*Mathieu Levy*/
 
 #include "print.h"
+#define NB_KEY 3
 
-void handleEvent (SDL_Event event, int *quit);
+void handleEvent (SDL_Event event, int *quit, int tableEvent [NB_KEY]);
 void game ();
 
-void handleEvent (SDL_Event event, int *quit)
+
+  
+
+
+void handleEvent (SDL_Event event, int *quit, int tableEvent [NB_KEY])
 {
   switch (event.type) {
     /*Close button pressed*/
@@ -23,9 +29,31 @@ void handleEvent (SDL_Event event, int *quit)
     case SDLK_q:
       *quit = 1;
       break;
+    case SDLK_LEFT:
+      tableEvent[0] = 1;
+      break;
+    case SDLK_RIGHT:
+      tableEvent[1] = 1;
+      break;
+    case SDLK_SPACE:
+      tableEvent[2] = 1;
+      break;
     default:
       break;
     }
+  case SDL_KEYUP:
+    switch (event.key.keysym.sym){
+      case SDLK_LEFT:
+	tableEvent[0] = 0;
+	break;
+      case SDLK_RIGHT:
+	tableEvent[1] = 0;
+	break;
+      case SDLK_SPACE:
+	tableEvent[2] = 0;
+	
+    }
+  
   }
 }
 

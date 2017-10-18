@@ -10,6 +10,7 @@
 #define STRUC_H
 
 #include "print.h"
+
 /*Physic_t : acceleration and position*/
  
 struct Physic_t{

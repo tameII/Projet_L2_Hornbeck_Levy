@@ -26,8 +26,10 @@ SDL_Surface* download_sprite_(char *nomSprite)
   
   return nom;
 }
-////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////
+/*Function to set the map*/
+////////////////////////////////////////////////////////////
 
 /*display the map*/
 void displayMap (char** map, SDL_Surface *screen,  SDL_Surface *background, SDL_Surface *beam)
@@ -40,7 +42,7 @@ void displayMap (char** map, SDL_Surface *screen,  SDL_Surface *background, SDL_
   for (i = 0; i < ROOM_HEIGHT; i++){
     for (j = 0; j < ROOM_WIDTH; j++){
       
-      // printf("%c", map[i][j]);
+      //printf("%c", map[i][j]);
       //printf("i : %d, j : %d \n",i,j);
       
       switch (map[i][j]) {
@@ -49,8 +51,10 @@ void displayMap (char** map, SDL_Surface *screen,  SDL_Surface *background, SDL_
 	pos.y = i*8;
 	SDL_BlitSurface(beam, NULL, screen, &pos);
 	break;
+
       default:
 	break;
+
       }
     }
   }
@@ -60,7 +64,7 @@ void displayMap (char** map, SDL_Surface *screen,  SDL_Surface *background, SDL_
 /*Memory allocation for the map                                  *
  *Declaration of "pointer of pointer(**)" who point on pointer(*)*
  *association of (**) with (*) who point on the char             */
-char** crea_Map (int size_x, int size_y)
+char** creaMap (int size_x, int size_y)
 {
   int i;
   char** tab;  
@@ -74,7 +78,7 @@ char** crea_Map (int size_x, int size_y)
 /* Free the tab: take the y of the tab  *
  * and free all the y pointer           *
  * Next you just need to free the tab ! */
-void free_Map (char** map, int size_y)
+void freeMap (char** map, int size_y)
 {
   int y;
   printf("free_Map : FREEDOM TO ALL POINTER :... \n");
@@ -108,3 +112,12 @@ void readMap (char* nameMap, char** map)
   fclose(txt); 
  
 }	
+
+
+/////////////////////////////////////////////////////////////////////////////::
+/*drawSprite : draw one sprite_t*/
+void drawSprite(sprite_t sprite, SDL_Surface *screen)
+{
+  SDL_BlitSurface(sprite.spritePicture, &sprite.position, screen, &sprite.picture);
+
+}
