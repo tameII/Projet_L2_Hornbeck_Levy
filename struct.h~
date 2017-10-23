@@ -6,13 +6,15 @@
 /**************************/
 /*https://www.rocq.inria.fr/secret/Anne.Canteaut/COURS_C/cours.pdf*/
 /*You can find here the structures of all objects*/
+#ifndef STRUC_H
+#define STRUC_H
 
-
+#include "print.h"
 
 /*Physic_t : acceleration and position*/
-
+ 
 struct Physic_t{
-  double x;    /* Position    */
+  double x;    /* Position    */ 
   double y;    /*             */
   double sx;   /*  Speed      */
   double sy;   /*             */
@@ -47,3 +49,6 @@ struct Sprite_t{
 };
 
 typedef struct Sprite_t sprite_t;
+
+
+#endif

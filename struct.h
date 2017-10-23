@@ -9,7 +9,7 @@
 #ifndef STRUC_H
 #define STRUC_H
 
-#include "print.h"
+
 
 /*Physic_t : acceleration and position*/
  
@@ -49,6 +49,14 @@ struct Sprite_t{
 };
 
 typedef struct Sprite_t sprite_t;
+
+void spriteInit(sprite_t *sprite, sprite_type type,
+		int accel, int smax,
+		int nb_sprite,
+		int sprite_size,
+		int sprite_number, int max_number,
+		int life,
+		SDL_Surface * sprite_picture);
 
 
 #endif

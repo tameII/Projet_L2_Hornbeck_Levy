@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <SDL.h>
-
+#include "struct.h"
 
 #define ROOM_WIDTH 135
 #define ROOM_HEIGHT 90
@@ -28,8 +28,8 @@ void displayMap (char** map, SDL_Surface *screen,
 
 
 char** creaMap (int size_x, int size_y);
-void freeMap (char** map, int size_x);
+void freeMap (char** map, int size_y);
 void readMap (char* nameMap, char** map);
-
+ 
 
 #endif

@@ -9,7 +9,7 @@
 void handleEvent (SDL_Event event, int *quit, int tableEvent [NB_KEY]);
 void game ();
 
-{
+
   
 
 
