@@ -16,15 +16,15 @@ void set_colorkey_(SDL_Surface *sprite_picture,
 }
 
 /*auxiliary fonction to downloadsprite*/
-SDL_Surface* download_sprite_(char *nomSprite)
+SDL_Surface* download_sprite_(char *nameSprite)
 {
  
-  SDL_Surface *temp, *nom;
-  temp = SDL_LoadBMP(nomSprite);
-  nom = SDL_DisplayFormat(temp);;
+  SDL_Surface *temp, *name;
+  temp = SDL_LoadBMP(nameSprite);
+  name = SDL_DisplayFormat(temp);;
   SDL_FreeSurface(temp);
   
-  return nom;
+  return name;
 }
 ////////////////////////////////////////////////////////////
 
@@ -54,8 +54,9 @@ void displayMap (char** map, sprite_t *hero1, bool *readed,
 	SDL_BlitSurface(beam, NULL, screen, &pos);
 	break;
       case '3':
-	if(!readed){
-	  //hero1.physic.x = j*8;
+	if(!*readed){
+	  hero1->physic.x = j*8;
+	  hero1->physic.y = i*8;
 	  printf("readed\n");
 	}
 	break;
@@ -120,11 +121,11 @@ void readMap (char* nameMap, char** map)
 
 /*Warning: this function is not really effective*/
 /*We need a new one*/
-void drawSprite(sprite_t sprite, SDL_Surface *screen)
+void drawSprite(sprite_t *sprite, SDL_Surface *screen)
 {
-  SDL_BlitSurface(sprite.spritePicture,
-		  &sprite.position, screen,
-		  &sprite.picture);
+  SDL_BlitSurface(sprite->spritePicture,
+		  &sprite->picture, screen,
+		  &sprite->position);
 
 }
 
@@ -134,7 +135,7 @@ void drawSprite(sprite_t sprite, SDL_Surface *screen)
 
 
 void spriteInit(sprite_t *sprite, sprite_type type,
-		int accel, int smax,
+	        double accel, double smax, int jumpPower,
 		int nb_sprite,
 		int sprite_size,
 		int sprite_number, int max_number,
@@ -143,22 +144,24 @@ void spriteInit(sprite_t *sprite, sprite_type type,
 {
 
   sprite->type = type;
+  sprite->physic.x =  0;
+  sprite->physic.y =  0;
+  sprite->physic.sx = 0;
+  sprite->physic.sy = 0;
   sprite->physic.a = accel ;
   sprite->physic.smax = smax;
+  sprite->physic.jumpPower = jumpPower;
   sprite->currentPicture = 0;
   sprite->currentAnimation = 0;
   sprite->size = sprite_size;
   sprite->nb_sprite = nb_sprite;
   sprite->size = sprite_size;
   sprite->count = 0;
-  sprite->sprite_number = sprite_number;
-  sprite->max_number = max_number;
+  sprite->sprite_number = sprite_number;  /* Number in the array               */
+  sprite->max_number = max_number;        /* Number max of sprite in the array */
   sprite->life = life;
   sprite->spritePicture = sprite_picture;
 
-  if (sprite->type == hero1){
-    printf("OMG, spriteInit WORK\n");
-  }
 
 }
 
@@ -167,14 +170,14 @@ void spriteInit(sprite_t *sprite, sprite_type type,
 //////////////////////////////////////////////////////////
 /*animation.c*/
 
-/*  position is the pointer of the SDL_Rect which determines the current sprite used, and nbSprite is the number of 
- *sprites in the animation and spriteSize is the size of one sprite*/
+/*  picture is the current sprite used,                *
+ *  nbSprite is the number of sprites in the animation */
 
-void animSprite ( SDL_Rect * position, int nbSprite, int spriteSize)
+void animSprite ( SDL_Rect * picture, int nbSprite, int spriteSize)
 {
-  position->x += spriteSize;
-  if (position->x == nbSprite * spriteSize){
-    position->x = 0;
+  picture->x += spriteSize;
+  if (picture->x == nbSprite * spriteSize){
+    picture->x = 0;
   }
 }
 
@@ -186,34 +189,67 @@ void animSprite ( SDL_Rect * position, int nbSprite, int spriteSize)
 
 /*#define GRAVITY -9.8*/
 
+/*Brake if not in the air*/
+void brake(sprite_t *sprite, double timerOfJump)
+{
+
+  if(timerOfJump <= 0.0){
+    /*if the sprite go the left*/
+    if(sprite->physic.sx < 0.0){
+      sprite->physic.sx += FROTTEMENT;
+    }  
+    /*else if the sprite go to the right*/
+    if(sprite->physic.sx > 0.0){
+      sprite->physic.sx -= FROTTEMENT;
+    }
+  }
+  
+}
+
 /*move a sprite by his speed vector*/
 void move (sprite_t *sprite)
 {
+  
   sprite -> physic.x += sprite -> physic.sx;
   sprite -> physic.y += sprite -> physic.sy;
   sprite -> position.x = (int) sprite -> physic.x;
   sprite -> position.y = (int) sprite -> physic.y;
-  printf("sx: %f, sy: %f",sprite -> physic.sx, sprite -> physic.sy );
-  printf("x: %d, y: %d \n", sprite->position.x, sprite->position.y);
+  // printf("sx: %f, sy: %f",sprite -> physic.sx, sprite -> physic.sy );
+  //printf("x: %d, y: %d \n", sprite->position.x, sprite->position.y);
 }
 
 
 /*make a character running, direction = -1 if left, 1 if right*/
-void run (sprite_t *character, int direction)
+void run (sprite_t *character, double direction)
 {
-  character->physic.sx += (character->physic.a)*direction;  /*the speed rise by adding the acceleration*/
-  if (abs(character->physic.sx) > character->physic.smax){
-    character->physic.sx = character->physic.smax;  /*if the speed of the sprite is higher than its speed limit, its speed becomes its speed limit*/ 
+  // double i;
+  /*the speed rise by adding the acceleration*/
+  character->physic.sx += (character->physic.a) * direction;
+  //printf("%f \n\n",  character->physic.a);
+  //i = (character->physic.a)*direction;
+  // printf("i: %f \n", i);
+  /* if the speed of the sprite is higher *
+   * than its speed limit,               *
+   * it speed becomes its speed limit     */ 
+  if (abs(character->physic.sx) >= character->physic.smax){
+    character->physic.sx = character->physic.smax;
+    printf("max");
   }
+  
 }
 
-/*jump finds the appropriate jump speed of a character, if there is a colision with the ground, timer must be 0 now*/
+/*jump finds the appropriate jump speed of a character,  *
+ * if there is a colision with the ground,               *
+ * timer must be 0 now                                   */
 void jumping (sprite_t *character, double *timer)
 {
    *timer += 1;
    character->physic.sy = (GRAVITY * *timer)
      + character-> physic.jumpPower;
+   
 }
+
+
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////

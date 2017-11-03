@@ -18,7 +18,7 @@
 
 
 #define GRAVITY -9.8
-
+#define FROTTEMENT 0.01
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
@@ -32,7 +32,7 @@ struct Physic_t{
   double sx;     /* Speed        */
   double sy;     /*              */
   double smax;   /* SpeedMax     */
-  int a;         /* Acceleration */
+  double a;         /* Acceleration */
   int jumpPower; /* JumpPower    */
 };
 
@@ -64,7 +64,7 @@ struct Sprite_t{
 typedef struct Sprite_t sprite_t;
 
 void spriteInit(sprite_t *sprite, sprite_type type,
-		int accel, int smax,
+		double accel, double smax, int jumpPower,
 		int nb_sprite,
 		int sprite_size,
 		int sprite_number, int max_number,
@@ -79,7 +79,7 @@ void spriteInit(sprite_t *sprite, sprite_type type,
 void set_colorkey_(SDL_Surface *sprite_picture,
 		   int R, int G, int B,
 		   SDL_Surface *screen);
-SDL_Surface* download_sprite_(char *nomSprite);
+SDL_Surface* download_sprite_(char *nameSprite);
 void displayMap (char** map, sprite_t *hero1, bool *readed,
 		 SDL_Surface *screen, SDL_Surface *background,
 		 SDL_Surface *beam);
@@ -88,14 +88,14 @@ char** crea_Map (int size_x, int size_y);
 void free_Map (char** map, int size_y);
 void readMap (char* nameMap, char** map);
 
-void drawSprite(sprite_t sprite, SDL_Surface *screen);
+void drawSprite(sprite_t *sprite, SDL_Surface *screen);
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
 /*animation.h*/
 
-void animSprite ( SDL_Rect * position, int nbSprite,
+void animSprite ( SDL_Rect * picture, int nbSprite,
 		  int spriteSize);
 
 
@@ -103,9 +103,9 @@ void animSprite ( SDL_Rect * position, int nbSprite,
 //////////////////////////////////////////////////////////
 
 /*physics.h*/
-
+void brake(sprite_t *sprite, double timerOfJump);
 void move (sprite_t *sprite);
-void run (sprite_t *character, int direction);
+void run (sprite_t *character, double direction);
 void jumping (sprite_t *character, double *timer);
 
 //////////////////////////////////////////////////////////

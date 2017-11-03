@@ -6,13 +6,19 @@
 
 #define NB_KEY 3
 
+
 #define BASE_LIFE 1
 
+
 #define ACCEL_H1  0.1
-#define S_MAX_H1  2
+#define S_MAX_H1  5
+#define JPOWER_H1 1
 #define NB_SPRITE_H1 1
 #define SPRITE_SIZE_H1 64
 #define LIFE_H1 3
+
+#define TO_THE_LEFT -1
+#define TO_THE_RIGHT 1 
 //////////////////////////////////
 void wipe_tab(int *tab, int N);
 void init_hero1(sprite_t *hero1, SDL_Surface *sprite_picture);
@@ -22,6 +28,20 @@ void handleEvent (SDL_Event event, int *quit,
 
 void game ();
 
+/*fonction pour faire réapparaitre un sprite de l'autre coté coté de l'écran */
+/*Elle sert just pour les test pour le moment                                */
+/*J'ai retiré la possibilité de réapparaitre en bas depuis le haut           */
+/*(pour pas faire de FLOUSHFLOUSHFLOSHFLSHFSHFH a la portal)                 */
+void hyperespace(sprite_t *sprite)
+{
+  if(sprite->physic.x < 0)
+    sprite->physic.x = sprite->physic.x + SCREEN_WIDTH - sprite->size;
+  else if(sprite->physic.x > SCREEN_WIDTH - sprite->size)
+    sprite->physic.x = sprite->physic.x - SCREEN_WIDTH + sprite->size;
+  if(sprite->physic.y > SCREEN_HEIGHT - sprite->size)
+    sprite->physic.y = sprite->physic.y - SCREEN_HEIGHT + sprite->size;
+  
+}
 
 
 //////////////////////////////////////////////////
@@ -40,17 +60,15 @@ void wipe_tab(int *tab, int N)
 void init_hero1(sprite_t *h1, SDL_Surface *sprite_picture)
 {
   
-
-  
   spriteInit( h1, hero1,
-	      ACCEL_H1 , S_MAX_H1,
-	      NB_SPRITE_H1,
-	      SPRITE_SIZE_H1,
+	      ACCEL_H1 , S_MAX_H1, JPOWER_H1,
+	      NB_SPRITE_H1, SPRITE_SIZE_H1,
 	      1, 1,          /*if we talk about a tab of sprite*/
 	      LIFE_H1,
 	      sprite_picture);
 
-    }
+}
+
 
 /*Event gestion*/
 void handleEvent (SDL_Event event, int *quit,
@@ -100,14 +118,19 @@ void handleEvent (SDL_Event event, int *quit,
     }
     break;
   }
+
   if(tableEvent[0] == 1){
-    // printf("LEEEEEFT\n");
-    run(h1, -1);
+    run(h1, TO_THE_LEFT);
   }
+  
   if(tableEvent[1] == 1){
-    // printf("RIIIIGHT\n");
-    run(h1, 1);
+    run(h1, TO_THE_RIGHT);
   }
+  /*If LEFT and RIGHT not pressed
+  if(tableEvent[0] == 0 && tableEvent[1] == 0){
+    brake(h1);
+  } */
+  
   if(tableEvent[2] == 1){
     printf("JUUUUUMP\n");
   }
@@ -129,7 +152,10 @@ void game ()
 
   int tableEvent[NB_KEY];
   wipe_tab(tableEvent, NB_KEY);
- 
+
+  double timerOfJump = 0;
+
+  
   /*initialise SDL*/
   SDL_Init (SDL_INIT_VIDEO);
 
@@ -167,11 +193,16 @@ void game ()
     if (SDL_PollEvent(&event)) {
       handleEvent (event, &quit, tableEvent, &h1);
 	}
+    
     /*Draw the background*/
     displayMap(map, &h1, &readed, screen, background, beam);
 
     move(&h1);
-    drawSprite(h1, screen);
+    brake(&h1, timerOfJump);
+    hyperespace(&h1); //c'est juste pour pas me prendre la tete que j'ajoute ça
+    
+    drawSprite(&h1, screen);
+    //SDL_BlitSurface(h1_picture, NULL, screen, &h1.position);
     /*update the screen*/
     SDL_UpdateRect(screen, 0, 0, 0, 0);
   }
