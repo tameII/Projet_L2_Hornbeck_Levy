@@ -8,23 +8,27 @@
 
 
 #define BASE_LIFE 1
-
+#define BASE_ACCEL 0.1
+#define BASE_S_MAX 5
+#define BASE_JPOWER 1
 
 #define ACCEL_H1  0.1
 #define S_MAX_H1  5
-#define JPOWER_H1 1
+#define JPOWER_H1 3
 #define NB_SPRITE_H1 1
 #define SPRITE_SIZE_H1 64
 #define LIFE_H1 3
 
+
 #define TO_THE_LEFT -1
-#define TO_THE_RIGHT 1 
+#define TO_THE_RIGHT 1
+
 //////////////////////////////////
 void wipe_tab(int *tab, int N);
 void init_hero1(sprite_t *hero1, SDL_Surface *sprite_picture);
-
+ 
 void handleEvent (SDL_Event event, int *quit,
-		  int tableEvent [NB_KEY], sprite_t *h1);
+		  int tableEvent [NB_KEY], sprite_t *h1, bool *isJumping);
 
 void game ();
 
@@ -32,17 +36,20 @@ void game ();
 /*Elle sert just pour les test pour le moment                                */
 /*J'ai retiré la possibilité de réapparaitre en bas depuis le haut           */
 /*(pour pas faire de FLOUSHFLOUSHFLOSHFLSHFSHFH a la portal)                 */
-void hyperespace(sprite_t *sprite)
+void hyperespace(sprite_t *sprite, double *timerOfJump, bool *isJumping)
 {
-  if(sprite->physic.x < 0)
+  if(sprite->physic.x < 0){
     sprite->physic.x = sprite->physic.x + SCREEN_WIDTH - sprite->size;
-  else if(sprite->physic.x > SCREEN_WIDTH - sprite->size)
+  }
+  else if(sprite->physic.x > SCREEN_WIDTH - sprite->size){
     sprite->physic.x = sprite->physic.x - SCREEN_WIDTH + sprite->size;
-  if(sprite->physic.y > SCREEN_HEIGHT - sprite->size)
-    sprite->physic.y = sprite->physic.y - SCREEN_HEIGHT + sprite->size;
-  
+  }
+  if(sprite->physic.y > SCREEN_HEIGHT - sprite->size){
+    sprite->physic.y = SCREEN_HEIGHT - sprite->size;
+    *timerOfJump = 0;
+    *isJumping = false;
+  }
 }
-
 
 //////////////////////////////////////////////////
 /*Put a 0 in all member of the tab*/
@@ -73,7 +80,7 @@ void init_hero1(sprite_t *h1, SDL_Surface *sprite_picture)
 /*Event gestion*/
 void handleEvent (SDL_Event event, int *quit,
 		  int tableEvent [NB_KEY],
-		  sprite_t *h1)
+		  sprite_t *h1, bool *isJumping)
 {
   switch (event.type) {
     /*Close button pressed*/
@@ -96,6 +103,7 @@ void handleEvent (SDL_Event event, int *quit,
       tableEvent[1] = 1;
       break;
     case SDLK_SPACE:
+    case SDLK_UP:
       tableEvent[2] = 1;
       break;
     default:
@@ -104,15 +112,16 @@ void handleEvent (SDL_Event event, int *quit,
     break;
   case SDL_KEYUP:
     switch (event.key.keysym.sym){
-      case SDLK_LEFT:
-	tableEvent[0] = 0;
-	break;
-      case SDLK_RIGHT:
-	tableEvent[1] = 0;
-	break;
-      case SDLK_SPACE:
-	tableEvent[2] = 0;
-	break;
+    case SDLK_LEFT:
+      tableEvent[0] = 0;
+      break;
+    case SDLK_RIGHT:
+      tableEvent[1] = 0;
+      break;
+    case SDLK_SPACE:
+    case SDLK_UP:
+      tableEvent[2] = 0;
+      break;
     default:
       break;
     }
@@ -132,7 +141,7 @@ void handleEvent (SDL_Event event, int *quit,
   } */
   
   if(tableEvent[2] == 1){
-    printf("JUUUUUMP\n");
+    jump(h1, isJumping);
   }
 }
 
@@ -154,7 +163,7 @@ void game ()
   wipe_tab(tableEvent, NB_KEY);
 
   double timerOfJump = 0;
-
+  bool isJumping = false;
   
   /*initialise SDL*/
   SDL_Init (SDL_INIT_VIDEO);
@@ -191,15 +200,15 @@ void game ()
      * and shape of sprites                       */
     SDL_Event event;
     if (SDL_PollEvent(&event)) {
-      handleEvent (event, &quit, tableEvent, &h1);
+      handleEvent (event, &quit, tableEvent, &h1, &isJumping);
 	}
-    
     /*Draw the background*/
     displayMap(map, &h1, &readed, screen, background, beam);
 
     move(&h1);
-    brake(&h1, timerOfJump);
-    hyperespace(&h1); //c'est juste pour pas me prendre la tete que j'ajoute ça
+    brake(&h1, isJumping);
+    fall(&h1, &timerOfJump,  &isJumping);
+    hyperespace(&h1, &timerOfJump, &isJumping); //c'est juste pour pas me prendre la tete que j'ajoute ça
     
     drawSprite(&h1, screen);
     //SDL_BlitSurface(h1_picture, NULL, screen, &h1.position);

@@ -160,8 +160,11 @@ void spriteInit(sprite_t *sprite, sprite_type type,
   sprite->sprite_number = sprite_number;  /* Number in the array               */
   sprite->max_number = max_number;        /* Number max of sprite in the array */
   sprite->life = life;
+  sprite->picture.x = 0;
+  sprite->picture.y = 0;
+  sprite->picture.w = sprite_size;
+  sprite->picture.h = sprite_size;
   sprite->spritePicture = sprite_picture;
-
 
 }
 
@@ -190,10 +193,10 @@ void animSprite ( SDL_Rect * picture, int nbSprite, int spriteSize)
 /*#define GRAVITY -9.8*/
 
 /*Brake if not in the air*/
-void brake(sprite_t *sprite, double timerOfJump)
+void brake(sprite_t *sprite, bool isJumping)
 {
 
-  if(timerOfJump <= 0.0){
+  if(!isJumping){
     /*if the sprite go the left*/
     if(sprite->physic.sx < 0.0){
       sprite->physic.sx += FROTTEMENT;
@@ -215,25 +218,23 @@ void move (sprite_t *sprite)
   sprite -> position.x = (int) sprite -> physic.x;
   sprite -> position.y = (int) sprite -> physic.y;
   // printf("sx: %f, sy: %f",sprite -> physic.sx, sprite -> physic.sy );
-  //printf("x: %d, y: %d \n", sprite->position.x, sprite->position.y);
+  // printf("x: %d, y: %d \n", sprite->position.x, sprite->position.y);
 }
 
 
 /*make a character running, direction = -1 if left, 1 if right*/
 void run (sprite_t *character, double direction)
 {
-  // double i;
+
   /*the speed rise by adding the acceleration*/
   character->physic.sx += (character->physic.a) * direction;
-  //printf("%f \n\n",  character->physic.a);
-  //i = (character->physic.a)*direction;
-  // printf("i: %f \n", i);
-  /* if the speed of the sprite is higher *
-   * than its speed limit,               *
-   * it speed becomes its speed limit     */ 
-  if (abs(character->physic.sx) >= character->physic.smax){
+
+  /*don't pass over the max speed */
+  if (character->physic.sx >= character->physic.smax){
     character->physic.sx = character->physic.smax;
-    printf("max");
+  }
+  else if(character->physic.sx <= -character->physic.smax){
+    character->physic.sx = -character->physic.smax;
   }
   
 }
@@ -243,13 +244,31 @@ void run (sprite_t *character, double direction)
  * timer must be 0 now                                   */
 void jumping (sprite_t *character, double *timer)
 {
-   *timer += 1;
+     *timer += 1;
    character->physic.sy = (GRAVITY * *timer)
      + character-> physic.jumpPower;
-   
+
 }
 
+void jump(sprite_t *character, bool *isJumping)
+{
+  if(!*isJumping){
+  character->physic.sy = -character->physic.jumpPower;
+  *isJumping = true;
+  }
+  
+}
 
-
+void fall(sprite_t *sprite, double *timer, bool *isJumping)
+{
+  if(*isJumping){
+     sprite->physic.sy -= GRAVITY * *timer;
+    *timer += 0.001;
+  }
+  if(!*isJumping){
+    sprite->physic.sy = 0;
+  }
+  
+}
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////

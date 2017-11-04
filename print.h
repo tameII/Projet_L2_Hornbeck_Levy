@@ -17,8 +17,8 @@
 #define SCREEN_HEIGHT 720
 
 
-#define GRAVITY -9.8
-#define FROTTEMENT 0.01
+#define GRAVITY -0.7
+#define FROTTEMENT 0.015
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
@@ -31,8 +31,8 @@ struct Physic_t{
   double y;      /*              */
   double sx;     /* Speed        */
   double sy;     /*              */
+  double a;      /* Acceleration */
   double smax;   /* SpeedMax     */
-  double a;         /* Acceleration */
   int jumpPower; /* JumpPower    */
 };
 
@@ -103,11 +103,13 @@ void animSprite ( SDL_Rect * picture, int nbSprite,
 //////////////////////////////////////////////////////////
 
 /*physics.h*/
-void brake(sprite_t *sprite, double timerOfJump);
+void brake(sprite_t *sprite, bool isJumping);
 void move (sprite_t *sprite);
 void run (sprite_t *character, double direction);
 void jumping (sprite_t *character, double *timer);
 
+void jump(sprite_t *character, bool *isJumping);
+void fall(sprite_t *sprite, double *timer, bool *isJumping);
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
