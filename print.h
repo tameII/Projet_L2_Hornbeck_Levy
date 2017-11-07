@@ -19,6 +19,18 @@
 
 #define GRAVITY -0.7
 #define FROTTEMENT 1.1
+
+#define SPRITE_STAND_RIGHT 0
+#define SPRITE_STAND_LEFT 1
+#define SPRITE_RUN_RIGHT 2
+#define SPRITE_RUN_LEFT 3
+#define SPRITE_JUMP_RIGHT 4
+#define SPRITE_JUMP_LEFT 5
+#define SPRITE_ATTACK_RIGHT 6
+#define SPRITE_ATTACK_LEFT 7 
+
+#define RUN_STEP 0.2
+
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
@@ -58,7 +70,7 @@ struct Sprite_t{
   SDL_Rect picture;  /*int he spritePicture   */
   SDL_Surface *spritePicture;
 
-
+ 
 };
 
 typedef struct Sprite_t sprite_t;
@@ -97,7 +109,8 @@ void drawSprite(sprite_t *sprite, SDL_Surface *screen);
 
 void animSprite ( SDL_Rect * picture, int nbSprite,
 		  int spriteSize);
-
+void directionChar (sprite_t *character);
+void animChar (sprite_t *character);
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////

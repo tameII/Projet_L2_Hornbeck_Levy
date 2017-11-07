@@ -20,6 +20,7 @@
 #define LIFE_H1 3
 
 
+
 #define TO_THE_LEFT -1
 #define TO_THE_RIGHT 1
 
@@ -181,7 +182,7 @@ void game ()
   background = download_sprite_("background.bmp");
   beam = download_sprite_("beam.bmp");
   
-  h1_picture = download_sprite_("forwards.bmp");
+  h1_picture = download_sprite_("h1.bmp");
   set_colorkey_(h1_picture, 255, 0, 255, screen);
   
   printf("\nPictures loaded \n");
@@ -210,6 +211,7 @@ void game ()
     fall(&h1, &timerOfJump,  &isJumping);
     hyperespace(&h1, &timerOfJump, &isJumping); //c'est juste pour pas me prendre la tete que j'ajoute ça
     
+    animChar(&h1);
     drawSprite(&h1, screen);
     //SDL_BlitSurface(h1_picture, NULL, screen, &h1.position);
     /*update the screen*/

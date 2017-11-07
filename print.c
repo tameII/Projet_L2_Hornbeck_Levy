@@ -183,6 +183,36 @@ void animSprite ( SDL_Rect * picture, int nbSprite, int spriteSize)
     picture->x = 0;
   }
 }
+void directionChar (sprite_t *character)
+{
+  if (character->physic.sx > 0 && character->physic.sx < RUN_STEP){
+    printf("standRight\n");
+    character->currentPicture = SPRITE_STAND_RIGHT;
+    character->nb_sprite = 1;
+  }
+  if (character->physic.sx < 0 && character->physic.sx > -RUN_STEP){
+    printf("standLeft\n");
+    character->currentPicture = SPRITE_STAND_LEFT;
+    character->nb_sprite = 1;
+  }
+  if (character->physic.sx > 0 && character->physic.sx > RUN_STEP){
+    printf("runRight\n");
+    character->currentPicture = SPRITE_RUN_RIGHT;
+    character->nb_sprite = 4;
+  }
+  if (character->physic.sx < 0 && character->physic.sx < -RUN_STEP){
+    printf("runLeft \n");
+    character->currentPicture = SPRITE_RUN_LEFT;
+    character->nb_sprite = 4;
+  }
+}
+
+void animChar (sprite_t *character)
+{
+  directionChar(character);
+  character->picture.y = character->size * character->currentPicture;
+  animSprite(&character->picture, character->nb_sprite, character->size);
+}
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -241,7 +271,7 @@ void run (sprite_t *character, double direction)
 
 /*jump finds the appropriate jump speed of a character,  *
  * if there is a colision with the ground,               *
- * timer must be 0 now                                   */
+ * timer must be 0 now                                   *//*
 void jumping (sprite_t *character, double *timer)
 {
      *timer += 1;
@@ -249,6 +279,7 @@ void jumping (sprite_t *character, double *timer)
      + character-> physic.jumpPower;
 
 }
+*/
 
 void jump(sprite_t *character, bool *isJumping)
 {
