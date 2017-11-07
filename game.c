@@ -12,8 +12,8 @@
 #define BASE_S_MAX 5
 #define BASE_JPOWER 1
 
-#define ACCEL_H1  0.7
-#define S_MAX_H1  5
+#define ACCEL_H1  0.1
+#define S_MAX_H1  1.5
 #define JPOWER_H1 3
 #define NB_SPRITE_H1 1
 #define SPRITE_SIZE_H1 64
@@ -28,7 +28,7 @@ void wipe_tab(int *tab, int N);
 void init_hero1(sprite_t *hero1, SDL_Surface *sprite_picture);
  
 void handleEvent (SDL_Event event, int *quit,
-		  int tableEvent [NB_KEY], sprite_t *h1, bool *isJumping);
+		  int tableEvent [NB_KEY], bool *allowedToJump);
 
 void game ();
 
@@ -38,13 +38,13 @@ void game ();
 /*(pour pas faire de FLOUSHFLOUSHFLOSHFLSHFSHFH a la portal)                 */
 void hyperespace(sprite_t *sprite, double *timerOfJump, bool *isJumping)
 {
-  if(sprite->physic.x < 0){
+  if(sprite->physic.x < 0){   //He is passing through the left wall
     sprite->physic.x = sprite->physic.x + SCREEN_WIDTH - sprite->size;
   }
-  else if(sprite->physic.x > SCREEN_WIDTH - sprite->size){
+  else if(sprite->physic.x > SCREEN_WIDTH - sprite->size){   //through the right wall
     sprite->physic.x = sprite->physic.x - SCREEN_WIDTH + sprite->size;
   }
-  if(sprite->physic.y > SCREEN_HEIGHT - sprite->size){
+  if(sprite->physic.y > SCREEN_HEIGHT - sprite->size){   //if he fall to the bottom of the screen
     sprite->physic.y = SCREEN_HEIGHT - sprite->size;
     *timerOfJump = 0;
     *isJumping = false;
@@ -79,8 +79,7 @@ void init_hero1(sprite_t *h1, SDL_Surface *sprite_picture)
 
 /*Event gestion*/
 void handleEvent (SDL_Event event, int *quit,
-		  int tableEvent [NB_KEY],
-		  sprite_t *h1, bool *isJumping)
+		  int *tableEvent, bool *allowedToJump)
 {
   switch (event.type) {
     /*Close button pressed*/
@@ -121,6 +120,7 @@ void handleEvent (SDL_Event event, int *quit,
     case SDLK_SPACE:
     case SDLK_UP:
       tableEvent[2] = 0;
+      *allowedToJump = true;
       break;
     default:
       break;
@@ -128,23 +128,35 @@ void handleEvent (SDL_Event event, int *quit,
     break;
   }
 
-  if(tableEvent[0] == 1){
+  /*if(tableEvent[0] == 1){
     run(h1, TO_THE_LEFT);
   }
   
   if(tableEvent[1] == 1){
     run(h1, TO_THE_RIGHT);
   }
-  /*If LEFT and RIGHT not pressed
-  if(tableEvent[0] == 0 && tableEvent[1] == 0){
-    brake(h1);
-  } */
   
   if(tableEvent[2] == 1){
     jump(h1, isJumping);
-  }
+  }*/
 }
 
+/*this fonction call every event*/
+void applyEvent (sprite_t *h1, int *tableEvent, bool *isJumping, bool *allowedToJump)
+{
+  if(tableEvent[0] == 1){
+    printf("va à gauche ducon");
+    run(h1, TO_THE_LEFT);
+  }
+  
+  if(tableEvent[1] == 1){
+    run(h1, TO_THE_RIGHT);
+  }
+  if(tableEvent[2] == 1){
+    jump(h1, isJumping, allowedToJump);
+    *allowedToJump = false;
+  }
+}
 /*Main function*/
 void game ()
 {
@@ -154,7 +166,7 @@ void game ()
 
   bool readed = false;
   /************************/
-
+  
   char** map = NULL;
   map = crea_Map(ROOM_WIDTH, ROOM_HEIGHT);
   int quit = 0;
@@ -164,6 +176,7 @@ void game ()
 
   double timerOfJump = 0;
   bool isJumping = false;
+  bool allowedToJump = true;
   
   /*initialise SDL*/
   SDL_Init (SDL_INIT_VIDEO);
@@ -200,8 +213,9 @@ void game ()
      * and shape of sprites                       */
     SDL_Event event;
     if (SDL_PollEvent(&event)) {
-      handleEvent (event, &quit, tableEvent, &h1, &isJumping);
+      handleEvent (event, &quit, tableEvent, &allowedToJump);
 	}
+    applyEvent(&h1, tableEvent, &isJumping, &allowedToJump);
     /*Draw the background*/
     displayMap(map, &h1, &readed, screen, background, beam);
 

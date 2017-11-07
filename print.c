@@ -225,7 +225,6 @@ void move (sprite_t *sprite)
 /*make a character running, direction = -1 if left, 1 if right*/
 void run (sprite_t *character, double direction)
 {
-
   /*the speed rise by adding the acceleration*/
   character->physic.sx += (character->physic.a) * direction;
 
@@ -242,17 +241,17 @@ void run (sprite_t *character, double direction)
 /*jump finds the appropriate jump speed of a character,  *
  * if there is a colision with the ground,               *
  * timer must be 0 now                                   */
-void jumping (sprite_t *character, double *timer)
+/*void jumping (sprite_t *character, double *timer)
 {
      *timer += 1;
    character->physic.sy = (GRAVITY * *timer)
      + character-> physic.jumpPower;
 
-}
+}*/
 
-void jump(sprite_t *character, bool *isJumping)
+void jump(sprite_t *character, bool *isJumping, bool *allowedToJump)
 {
-  if(!*isJumping){
+  if(!*isJumping && *allowedToJump){
   character->physic.sy = -character->physic.jumpPower;
   *isJumping = true;
   }
@@ -264,9 +263,11 @@ void fall(sprite_t *sprite, double *timer, bool *isJumping)
   if(*isJumping){
      sprite->physic.sy -= GRAVITY * *timer;
     *timer += 0.001;
+    //printf("vitesse sur avant sol x : %f \n", sprite->physic.sx);
   }
   if(!*isJumping){
     sprite->physic.sy = 0;
+    //printf("vitesse sur x : %f \n", sprite->physic.sx);
   }
   
 }
