@@ -12,7 +12,7 @@
 #define BASE_S_MAX 5
 #define BASE_JPOWER 1
 
-#define ACCEL_H1  0.1
+#define ACCEL_H1  0.7
 #define S_MAX_H1  5
 #define JPOWER_H1 3
 #define NB_SPRITE_H1 1

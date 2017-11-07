@@ -199,11 +199,11 @@ void brake(sprite_t *sprite, bool isJumping)
   if(!isJumping){
     /*if the sprite go the left*/
     if(sprite->physic.sx < 0.0){
-      sprite->physic.sx += FROTTEMENT;
+      sprite->physic.sx /= FROTTEMENT;
     }  
     /*else if the sprite go to the right*/
     if(sprite->physic.sx > 0.0){
-      sprite->physic.sx -= FROTTEMENT;
+      sprite->physic.sx /= FROTTEMENT;
     }
   }
   
