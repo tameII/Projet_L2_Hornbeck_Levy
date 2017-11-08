@@ -121,7 +121,8 @@ void move (sprite_t *sprite);
 void run (sprite_t *character, double direction);
 void jumping (sprite_t *character, double *timer);
 
-void jump(sprite_t *character, bool *isJumping);
+
+void jump(sprite_t *character, bool *isJumping, bool *allowedToJump);
 void fall(sprite_t *sprite, double *timer, bool *isJumping);
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////

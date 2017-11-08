@@ -179,29 +179,29 @@ void spriteInit(sprite_t *sprite, sprite_type type,
 void animSprite ( SDL_Rect * picture, int nbSprite, int spriteSize)
 {
   picture->x += spriteSize;
-  if (picture->x == nbSprite * spriteSize){
+  if (picture->x >= nbSprite * spriteSize){
     picture->x = 0;
   }
 }
 void directionChar (sprite_t *character)
 {
   if (character->physic.sx > 0 && character->physic.sx < RUN_STEP){
-    printf("standRight\n");
+    // printf("standRight\n");
     character->currentPicture = SPRITE_STAND_RIGHT;
     character->nb_sprite = 1;
   }
   if (character->physic.sx < 0 && character->physic.sx > -RUN_STEP){
-    printf("standLeft\n");
+    //  printf("standLeft\n");
     character->currentPicture = SPRITE_STAND_LEFT;
     character->nb_sprite = 1;
   }
   if (character->physic.sx > 0 && character->physic.sx > RUN_STEP){
-    printf("runRight\n");
+    // printf("runRight\n");
     character->currentPicture = SPRITE_RUN_RIGHT;
     character->nb_sprite = 4;
   }
   if (character->physic.sx < 0 && character->physic.sx < -RUN_STEP){
-    printf("runLeft \n");
+    //printf("runLeft \n");
     character->currentPicture = SPRITE_RUN_LEFT;
     character->nb_sprite = 4;
   }
@@ -209,9 +209,22 @@ void directionChar (sprite_t *character)
 
 void animChar (sprite_t *character)
 {
+
   directionChar(character);
   character->picture.y = character->size * character->currentPicture;
+
   animSprite(&character->picture, character->nb_sprite, character->size);
+  /*
+  printf("character->nb_sprite : %d \n", character->nb_sprite);
+  printf("character->size : %d \n", character->size);
+  printf("\n");
+  printf("character->picture.x : %d \n", character->picture.x);
+  printf("character->picture.y : %d \n", character->picture.y);
+  printf("character->picture.h : %d \n", character->picture.h);
+  printf("character->picture.w : %d \n", character->picture.w);
+  printf("\n");
+  */
+  
 }
 
 //////////////////////////////////////////////////////////
@@ -269,25 +282,14 @@ void run (sprite_t *character, double direction)
   
 }
 
-/*jump finds the appropriate jump speed of a character,  *
- * if there is a colision with the ground,               *
- * timer must be 0 now                                   *//*
-void jumping (sprite_t *character, double *timer)
-{
-     *timer += 1;
-   character->physic.sy = (GRAVITY * *timer)
-     + character-> physic.jumpPower;
 
-}
-*/
 
-void jump(sprite_t *character, bool *isJumping)
+void jump(sprite_t *character, bool *isJumping, bool *allowedToJump)
 {
-  if(!*isJumping){
-  character->physic.sy = -character->physic.jumpPower;
-  *isJumping = true;
+  if(!*isJumping && *allowedToJump){
+    character->physic.sy = -character->physic.jumpPower;
+    *isJumping = true;
   }
-  
 }
 
 void fall(sprite_t *sprite, double *timer, bool *isJumping)

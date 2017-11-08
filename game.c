@@ -28,9 +28,11 @@
 void wipe_tab(int *tab, int N);
 void init_hero1(sprite_t *hero1, SDL_Surface *sprite_picture);
  
+/*Event gestion*/
 void handleEvent (SDL_Event event, int *quit,
-		  int tableEvent [NB_KEY], sprite_t *h1, bool *isJumping);
-
+		  int *tableEvent, bool *allowedToJump);
+void applyEvent (sprite_t *h1, int *tableEvent,
+		 bool *isJumping, bool *allowedToJump);
 void game ();
 
 /*fonction pour faire réapparaitre un sprite de l'autre coté coté de l'écran */
@@ -80,8 +82,7 @@ void init_hero1(sprite_t *h1, SDL_Surface *sprite_picture)
 
 /*Event gestion*/
 void handleEvent (SDL_Event event, int *quit,
-		  int tableEvent [NB_KEY],
-		  sprite_t *h1, bool *isJumping)
+		  int *tableEvent, bool *allowedToJump)
 {
   switch (event.type) {
     /*Close button pressed*/
@@ -122,13 +123,18 @@ void handleEvent (SDL_Event event, int *quit,
     case SDLK_SPACE:
     case SDLK_UP:
       tableEvent[2] = 0;
+      *allowedToJump = true;
       break;
     default:
       break;
     }
     break;
   }
+}
 
+/*this fonction call every event*/
+void applyEvent (sprite_t *h1, int *tableEvent, bool *isJumping, bool *allowedToJump)
+{
   if(tableEvent[0] == 1){
     run(h1, TO_THE_LEFT);
   }
@@ -136,13 +142,9 @@ void handleEvent (SDL_Event event, int *quit,
   if(tableEvent[1] == 1){
     run(h1, TO_THE_RIGHT);
   }
-  /*If LEFT and RIGHT not pressed
-  if(tableEvent[0] == 0 && tableEvent[1] == 0){
-    brake(h1);
-  } */
-  
   if(tableEvent[2] == 1){
-    jump(h1, isJumping);
+    jump(h1, isJumping, allowedToJump);
+    *allowedToJump = false;
   }
 }
 
@@ -165,7 +167,8 @@ void game ()
 
   double timerOfJump = 0;
   bool isJumping = false;
-  
+  bool allowedToJump = true;
+
   /*initialise SDL*/
   SDL_Init (SDL_INIT_VIDEO);
 
@@ -201,8 +204,9 @@ void game ()
      * and shape of sprites                       */
     SDL_Event event;
     if (SDL_PollEvent(&event)) {
-      handleEvent (event, &quit, tableEvent, &h1, &isJumping);
+      handleEvent (event, &quit, tableEvent, &allowedToJump);
 	}
+applyEvent(&h1, tableEvent, &isJumping, &allowedToJump);
     /*Draw the background*/
     displayMap(map, &h1, &readed, screen, background, beam);
 
