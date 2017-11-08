@@ -112,12 +112,3 @@ void readMap (char* nameMap, char** map)
   fclose(txt); 
  
 }	
-
-
-/////////////////////////////////////////////////////////////////////////////::
-/*drawSprite : draw one sprite_t*/
-void drawSprite(sprite_t sprite, SDL_Surface *screen)
-{
-  SDL_BlitSurface(sprite.spritePicture, &sprite.position, screen, &sprite.picture);
-
-}
