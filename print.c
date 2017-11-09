@@ -27,17 +27,74 @@ SDL_Surface* download_sprite_(char *nameSprite)
   return name;
 }
 ////////////////////////////////////////////////////////////
+/*struct.c*/
+void spriteInit(sprite_t *sprite, sprite_type type,
+	        double accel, double smax, int jumpPower,
+		int nb_sprite,
+		int sprite_size,
+		int sprite_number, int max_number,
+		int life,
+		SDL_Surface * sprite_picture)
+{
 
+  sprite->type = type;
+  sprite->physic.x =  0;
+  sprite->physic.y =  0;
+  sprite->physic.sx = 0;
+  sprite->physic.sy = 0;
+  sprite->physic.a = accel ;
+  sprite->physic.smax = smax;
+  sprite->physic.jumpPower = jumpPower;
+  sprite->currentPicture = 0;
+  sprite->currentAnimation = 0;
+  sprite->size = sprite_size;
+  sprite->nb_sprite = nb_sprite;
+  sprite->size = sprite_size;
+  sprite->count = 0;
+  sprite->sprite_number = sprite_number;  /* Number in the array               */
+  sprite->max_number = max_number;        /* Number max of sprite in the array */
+  sprite->life = life;
+  sprite->picture.x = 0;
+  sprite->picture.y = 0;
+  sprite->picture.w = sprite_size;
+  sprite->picture.h = sprite_size;
+  sprite->spritePicture = sprite_picture;
+
+}
+
+
+void init_hero1(sprite_t *h1, SDL_Surface *sprite_picture)
+{
+  
+  spriteInit( h1, hero1,
+	      ACCEL_H1 , S_MAX_H1, JPOWER_H1,
+	      NB_SPRITE_H1, SPRITE_SIZE_H1,
+	      1, 1,          /*if we talk about a tab of sprite*/
+	      LIFE_H1,
+	      sprite_picture);
+
+}
+
+void initEnnemy(sprite_t *charac, int numberEnnemy, SDL_Surface *ennemy_picture)
+{
+  spriteInit(charac, ennemy_t, ACCEL_ENNEMY, S_MAX_ENNEMY, JPOWER_ENNEMY,
+	     NB_SPRITE_ENNEMY, SPRITE_SIZE_H1, numberEnnemy, MAX_ENNEMIES, 
+	     LIFE_ENNEMY, ennemy_picture);
+}
+
+
+
+///////////////////////////////////////////////////////////
 
 /* display the map                              */
 /* She is readed one full time to know the base *
  * position of all character                    */
 void displayMap (char** map, sprite_t *hero1, bool *readed,
 		 SDL_Surface *screen, SDL_Surface *background,
-		 SDL_Surface *beam)
+		 SDL_Surface *beam, sprite_t *ennemies, int *nbEnnemy, SDL_Surface *ennemy_picture)
 {
 
-  
+  int currEnnemy = 0;
   SDL_Rect pos;
   int i,j;
   SDL_BlitSurface(background, NULL, screen, NULL);
@@ -57,12 +114,30 @@ void displayMap (char** map, sprite_t *hero1, bool *readed,
 	if(!*readed){
 	  hero1->physic.x = j*8;
 	  hero1->physic.y = i*8;
-	  printf("readed\n");
+	}
+	break;
+      case '7':
+	if (!*readed){
+	  initEnnemy(&ennemies[currEnnemy], currEnnemy, ennemy_picture);
+	  ennemies[currEnnemy].physic.x = j*8;
+	  ennemies[currEnnemy].physic.y = i*8;
+	  printf("7 readed\n");
+	  printf("x = %f  ||  y = %f\n",ennemies[currEnnemy].physic.x,ennemies[currEnnemy].physic.y);
+	  currEnnemy += 1;
+	  printf("currEnnemy = %d\n",currEnnemy);
+	  *nbEnnemy += 1;
+	  printf("nbEnnemy = %d\n",*nbEnnemy);
 	}
 	break;
       default:
 	break;
       }
+    }
+  }
+  for (i=0; i<=*nbEnnemy; i++){
+    if (!*readed){
+      printf("ennemy %d || x = %f || y = %f\n",i,ennemies[i].physic.x,ennemies[i].physic.y);
+      printf("nbEnnemy = %d\n",*nbEnnemy);
     }
   }
   *readed = true;
@@ -131,42 +206,9 @@ void drawSprite(sprite_t *sprite, SDL_Surface *screen)
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
-/*struct.c*/
 
 
-void spriteInit(sprite_t *sprite, sprite_type type,
-	        double accel, double smax, int jumpPower,
-		int nb_sprite,
-		int sprite_size,
-		int sprite_number, int max_number,
-		int life,
-		SDL_Surface * sprite_picture)
-{
 
-  sprite->type = type;
-  sprite->physic.x =  0;
-  sprite->physic.y =  0;
-  sprite->physic.sx = 0;
-  sprite->physic.sy = 0;
-  sprite->physic.a = accel ;
-  sprite->physic.smax = smax;
-  sprite->physic.jumpPower = jumpPower;
-  sprite->currentPicture = 0;
-  sprite->currentAnimation = 0;
-  sprite->size = sprite_size;
-  sprite->nb_sprite = nb_sprite;
-  sprite->size = sprite_size;
-  sprite->count = 0;
-  sprite->sprite_number = sprite_number;  /* Number in the array               */
-  sprite->max_number = max_number;        /* Number max of sprite in the array */
-  sprite->life = life;
-  sprite->picture.x = 0;
-  sprite->picture.y = 0;
-  sprite->picture.w = sprite_size;
-  sprite->picture.h = sprite_size;
-  sprite->spritePicture = sprite_picture;
-
-}
 
 
 //////////////////////////////////////////////////////////
@@ -179,9 +221,52 @@ void spriteInit(sprite_t *sprite, sprite_type type,
 void animSprite ( SDL_Rect * picture, int nbSprite, int spriteSize)
 {
   picture->x += spriteSize;
-  if (picture->x == nbSprite * spriteSize){
+  if (picture->x >= nbSprite * spriteSize){
     picture->x = 0;
   }
+}
+void directionChar (sprite_t *character)
+{
+  if (character->physic.sx > 0 && character->physic.sx < RUN_STEP){
+    // printf("standRight\n");
+    character->currentPicture = SPRITE_STAND_RIGHT;
+    character->nb_sprite = 1;
+  }
+  if (character->physic.sx < 0 && character->physic.sx > -RUN_STEP){
+    //  printf("standLeft\n");
+    character->currentPicture = SPRITE_STAND_LEFT;
+    character->nb_sprite = 1;
+  }
+  if (character->physic.sx > 0 && character->physic.sx > RUN_STEP){
+    // printf("runRight\n");
+    character->currentPicture = SPRITE_RUN_RIGHT;
+    character->nb_sprite = 4;
+  }
+  if (character->physic.sx < 0 && character->physic.sx < -RUN_STEP){
+    //printf("runLeft \n");
+    character->currentPicture = SPRITE_RUN_LEFT;
+    character->nb_sprite = 4;
+  }
+}
+
+void animChar (sprite_t *character)
+{
+
+  directionChar(character);
+  character->picture.y = character->size * character->currentPicture;
+
+  animSprite(&character->picture, character->nb_sprite, character->size);
+  /*
+  printf("character->nb_sprite : %d \n", character->nb_sprite);
+  printf("character->size : %d \n", character->size);
+  printf("\n");
+  printf("character->picture.x : %d \n", character->picture.x);
+  printf("character->picture.y : %d \n", character->picture.y);
+  printf("character->picture.h : %d \n", character->picture.h);
+  printf("character->picture.w : %d \n", character->picture.w);
+  printf("\n");
+  */
+  
 }
 
 //////////////////////////////////////////////////////////
@@ -193,10 +278,10 @@ void animSprite ( SDL_Rect * picture, int nbSprite, int spriteSize)
 /*#define GRAVITY -9.8*/
 
 /*Brake if not in the air*/
-void brake(sprite_t *sprite, bool isJumping)
+void brake(sprite_t *sprite)
 {
 
-  if(!isJumping){
+  if(!sprite->physic.inTheAir){
     /*if the sprite go the left*/
     if(sprite->physic.sx < 0.0){
       sprite->physic.sx /= FROTTEMENT;
@@ -225,6 +310,7 @@ void move (sprite_t *sprite)
 /*make a character running, direction = -1 if left, 1 if right*/
 void run (sprite_t *character, double direction)
 {
+
   /*the speed rise by adding the acceleration*/
   character->physic.sx += (character->physic.a) * direction;
 
@@ -238,36 +324,24 @@ void run (sprite_t *character, double direction)
   
 }
 
-/*jump finds the appropriate jump speed of a character,  *
- * if there is a colision with the ground,               *
- * timer must be 0 now                                   */
-/*void jumping (sprite_t *character, double *timer)
-{
-     *timer += 1;
-   character->physic.sy = (GRAVITY * *timer)
-     + character-> physic.jumpPower;
 
-}*/
 
-void jump(sprite_t *character, bool *isJumping, bool *allowedToJump)
+void jump(sprite_t *character, bool *allowedToJump)
 {
-  if(!*isJumping && *allowedToJump){
-  character->physic.sy = -character->physic.jumpPower;
-  *isJumping = true;
+  if(!character->physic.inTheAir && *allowedToJump){
+    character->physic.sy = -character->physic.jumpPower;
+    character->physic.inTheAir = true;
   }
-  
 }
 
-void fall(sprite_t *sprite, double *timer, bool *isJumping)
+void fall(sprite_t *sprite, double *timer)
 {
-  if(*isJumping){
+  if(sprite->physic.inTheAir){
      sprite->physic.sy -= GRAVITY * *timer;
     *timer += 0.001;
-    //printf("vitesse sur avant sol x : %f \n", sprite->physic.sx);
   }
-  if(!*isJumping){
+  if(!sprite->physic.inTheAir){
     sprite->physic.sy = 0;
-    //printf("vitesse sur x : %f \n", sprite->physic.sx);
   }
   
 }
