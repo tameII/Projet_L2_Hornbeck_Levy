@@ -46,6 +46,11 @@
 #define LIFE_ENNEMY 3
 
 
+#define BASE_LIFE 1
+#define BASE_ACCEL 0.1
+#define BASE_S_MAX 5
+#define BASE_JPOWER 1
+
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -69,7 +74,7 @@ typedef struct Physic_t physic_t;
 
 /*Sprite_t: All characteristic for each sprite*/
 
-enum Sprite_type {hero1, ennemy_t};
+enum Sprite_type {hero1, ennemy_t, beam_t};
 typedef enum Sprite_type sprite_type; 
 
 struct Sprite_t{
@@ -102,7 +107,7 @@ void spriteInit(sprite_t *sprite, sprite_type type,
 
 void init_hero1(sprite_t *hero1, SDL_Surface *sprite_picture);
 void initEnnemy(sprite_t *charac, int numberEnnemy, SDL_Surface *ennemy_picture);
-
+void init_beam(sprite_t *beam, int beam_nb, SDL_Surface *sprite_picture);
 
 /////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////
@@ -115,9 +120,10 @@ void set_colorkey_(SDL_Surface *sprite_picture,
 SDL_Surface* download_sprite_(char *nameSprite);
 void displayMap (char** map, sprite_t *hero1, bool *readed,
 		 SDL_Surface *screen, SDL_Surface *background,
-		 SDL_Surface *beam, sprite_t *ennemies,
+		 sprite_t *beam, sprite_t *ennemies,
 		 int *nbEnnemy, SDL_Surface *ennemy_picture);
-
+int countInTheMap(char **map, char c);
+void creaTabSprite(sprite_t *tab, int size_x);
 char** crea_Map (int size_x, int size_y);
 void free_Map (char** map, int size_y);
 void readMap (char* nameMap, char** map);
@@ -147,6 +153,9 @@ void jumping (sprite_t *character, double *timer);
 void jump(sprite_t *character, bool *allowedToJump);
 void fall(sprite_t *sprite, double *timer);
 //////////////////////////////////////////////////////////
+bool collideSpriteTest(sprite_t sprite1, sprite_t sprite2);
+bool collideSpriteTestParam(sprite_t sprite1, sprite_t sprite2, SDL_PixelFormat* format,
+		  int * cu, int * cv);
 //////////////////////////////////////////////////////////
 
 

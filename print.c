@@ -82,7 +82,17 @@ void initEnnemy(sprite_t *charac, int numberEnnemy, SDL_Surface *ennemy_picture)
 	     LIFE_ENNEMY, ennemy_picture);
 }
 
-
+void init_beam(sprite_t *beam, int beam_nb, SDL_Surface *sprite_picture)
+{
+  printf("rentré dans init beam\n");
+  int i;
+  for(i=0; i<beam_nb; i++){
+    //  printf("i = %d \n", i);
+    spriteInit(&beam[i], beam_t, BASE_ACCEL, BASE_S_MAX, BASE_JPOWER, 1, 
+	     8, beam_nb, 1, BASE_LIFE, sprite_picture);
+  }
+  printf("init beam work\n");
+}
 
 ///////////////////////////////////////////////////////////
 
@@ -91,11 +101,11 @@ void initEnnemy(sprite_t *charac, int numberEnnemy, SDL_Surface *ennemy_picture)
  * position of all character                    */
 void displayMap (char** map, sprite_t *hero1, bool *readed,
 		 SDL_Surface *screen, SDL_Surface *background,
-		 SDL_Surface *beam, sprite_t *ennemies, int *nbEnnemy, SDL_Surface *ennemy_picture)
+		 sprite_t *beam, sprite_t *ennemies, int *nbEnnemy,
+		 SDL_Surface *ennemy_picture)
 {
-
+  int currBeam = 0;
   int currEnnemy = 0;
-  SDL_Rect pos;
   int i,j;
   SDL_BlitSurface(background, NULL, screen, NULL);
   for (i = 0; i < ROOM_HEIGHT; i++){
@@ -106,9 +116,12 @@ void displayMap (char** map, sprite_t *hero1, bool *readed,
       
       switch (map[i][j]) {
       case '1':
-	pos.x = j*8;   
-	pos.y = i*8;
-	SDL_BlitSurface(beam, NULL, screen, &pos);
+	if(!*readed){
+	  beam[currBeam].position.x = j*8;
+	  beam[currBeam].position.y = i*8;
+	}
+  	SDL_BlitSurface(beam->spritePicture, NULL, screen, &beam[currBeam].position);
+	currBeam += 1;
 	break;
       case '3':
 	if(!*readed){
@@ -143,6 +156,29 @@ void displayMap (char** map, sprite_t *hero1, bool *readed,
   *readed = true;
 }
 
+
+int countInTheMap(char **map, char c)
+{
+  int i,j;
+  int count = 0;
+
+  for (i = 0; i < ROOM_HEIGHT; i++){
+    for (j = 0; j < ROOM_WIDTH; j++){
+      if(map[i][j] == c) {
+	count +=1;
+      }
+    }
+  }
+  return count;
+}
+
+void creaTabSprite(sprite_t *tab, int size_x)
+{
+  
+  tab = (sprite_t*)malloc(size_x * sizeof(sprite_t*));
+
+  
+}
 
 /*Memory allocation for the map                                  *
  *Declaration of "pointer of pointer(**)" who point on pointer(*)*
@@ -346,4 +382,117 @@ void fall(sprite_t *sprite, double *timer)
   
 }
 //////////////////////////////////////////////////////////
+/*Take two sprite : return true if the two sprite are in contact*/
+bool collideSpriteTest(sprite_t sprite1, sprite_t sprite2)
+{
+  int cu = 0;
+  int cv = 0;
+  return collideSpriteTestParam(sprite1, sprite2, sprite1.spritePicture->format
+		      ,&cu, &cv);
+}
+
+bool collideSpriteTestParam(sprite_t sprite1, sprite_t sprite2, SDL_PixelFormat* format,
+		  int * cu, int * cv) 
+{
+  /* rough test using the bounding boxes (bb) only */
+  bool test = !(sprite2.physic.x > sprite1.physic.x + sprite1.size ||
+		sprite2.physic.x + sprite2.size < sprite1.physic.x ||
+		sprite2.physic.y > sprite1.physic.y + sprite1.spritePicture->h ||
+		sprite2.physic.y + sprite2.spritePicture->h < sprite1.physic.y);
+
+  /* if the rough test succeeded, a fine test is performed using             *
+   *  the colorkeys (transparency colors) of the sprites (may be optimized!) */
+  if (test) {
+    Uint32 *bmp1 = (Uint32*)malloc(sizeof(Uint32) * sprite1.size *
+				   sprite1.spritePicture->h),
+      *sprite_it, *bmp_it;
+    Uint32 *bmp2 = (Uint32*)malloc(sizeof(Uint32) * sprite2.size *
+				   sprite2.spritePicture->h);
+    int u, v, v1 = 0; 
+
+    /* lock the video memory and copy the sprite bitmaps into cpu memory */
+    SDL_LockSurface(sprite1.spritePicture);
+    SDL_LockSurface(sprite2.spritePicture);
+    bmp_it = bmp1;
+    sprite_it = (Uint32*)(sprite1.spritePicture->pixels) +  sprite1.currentPicture/2
+      * sprite1.size;
+    for (v = 0; v < sprite1.spritePicture->h; v++) {
+      for (u = 0; u < sprite1.size; u++) {
+	*bmp_it++ = *sprite_it++;
+      }
+      sprite_it += (sprite1.spritePicture->w - sprite1.size);
+    }
+    bmp_it = bmp2;
+    sprite_it = (Uint32*)(sprite2.spritePicture->pixels) +  sprite2.currentPicture/2
+      * sprite2.size;
+    for (v = 0; v < sprite2.spritePicture->h; v++) {
+      for (u = 0; u < sprite2.size; u++) {
+	*bmp_it++ = *sprite_it++;
+      }
+      sprite_it += (sprite2.spritePicture->w - sprite2.size);
+    }
+    SDL_UnlockSurface(sprite1.spritePicture);
+    SDL_UnlockSurface(sprite2.spritePicture);
+
+    bmp_it = bmp1;
+    test = false;
+
+    /* for each pixel p1 in bmp1, until test = true... */
+    while (!test && v1 < sprite1.spritePicture->h) {
+      int u1 = 0;
+      while (!test && u1 < sprite1.size) {
+	/* get the screen coordinates of pixel p1 */
+	int screen_u = u1 + sprite1.physic.x;
+	int screen_v = v1 + sprite1.physic.y;
+
+	/* if the screen coordinates of p1 are inside the bb of sprite2... */
+	if (screen_u >= sprite2.physic.x &&
+	    screen_u < sprite2.physic.x + sprite2.size &&
+	    screen_v >= sprite2.physic.y &&
+	    screen_v < sprite2.physic.y + sprite2.spritePicture->h) {
+	  Uint32 pixel1 = *bmp_it;
+	  unsigned int col1;
+	  Uint8 r, g, b;
+	  
+	  /* get the color col1 of p1*/
+	  SDL_GetRGB(pixel1, format, &r, &g, &b);
+	  col1 = SDL_MapRGB(format, r, g, b);
+
+	  /* if col1 is a NON transparent color... */
+	  if (col1 != sprite1.spritePicture->format->colorkey) {
+	    Uint32 pixel2;
+	    unsigned int col2;
+	    Uint8 r, g, b;
+	    int u2, v2;
+
+	    /* get the local coordinates of pixel p2 in sprite2 corresponding *
+	     *  to the screen coordinates of p1                               */
+	    u2 = screen_u - sprite2.physic.x;
+	    v2 = screen_v - sprite2.physic.y;
+	    
+	    /* get the color col2 of p2 */
+	    pixel2 = *(bmp2 + u2 + v2 * sprite2.size);
+	    SDL_GetRGB(pixel2, format, &r, &g, &b);
+	    col2 = SDL_MapRGB(format, r, g, b);
+	    
+	    /* if col2 is also a non transparent color, a collision occurs  */
+	    if (col2 != sprite2.spritePicture->format->colorkey) {
+	      test = true;
+	      *cu = screen_u; 
+	      *cv = screen_v;
+	    }
+	  }
+	}
+	u1++;
+	bmp_it++;
+      }
+      v1++;
+    }
+    free(bmp1);
+    free(bmp2);
+  }
+  
+  return test;
+}
+
 //////////////////////////////////////////////////////////

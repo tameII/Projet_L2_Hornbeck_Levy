@@ -135,12 +135,13 @@ void applyEvent (sprite_t *h1, int *tableEvent, bool *allowedToJump)
 /*Main function*/
 void game ()
 {
-  SDL_Surface *screen, *background, *beam, *h1_picture, *ennemy_picture;
-
+  SDL_Surface *screen, *background, *beam_picture, *h1_picture, *ennemy_picture;
+  sprite_t *beam = NULL;
   sprite_t h1; //main character
   sprite_t ennemies [MAX_ENNEMIES];  //tab of ennemies
   int nbEnnemies = 0; //number of ennemies currently on the screen
   bool readed = false;
+  int beam_nb;
   /************************/
   int i;
   char** map = NULL;
@@ -153,7 +154,7 @@ void game ()
   double timerOfJump = 0;
   bool allowedToJump = true;
   double distx, disty;
-
+  
   /*initialise SDL*/
   SDL_Init (SDL_INIT_VIDEO);
 
@@ -168,20 +169,24 @@ void game ()
 
   /*Picture Load:*/
   background = download_sprite_("background.bmp");
-  beam = download_sprite_("beam.bmp");
+  beam_picture = download_sprite_("beam.bmp");
   
   
   h1_picture = download_sprite_("h1.bmp");
   ennemy_picture = download_sprite_("ennemy.bmp");
   set_colorkey_(h1_picture, 255, 0, 255, screen);
   set_colorkey_(ennemy_picture, 255, 0, 255, screen);
+  
   printf("\nPictures loaded \n");
-
+  
   /*InitSprite*/
   init_hero1(&h1, h1_picture);
   readMap("test.txt", map);
 
-
+  beam_nb = countInTheMap(map, '1');
+  // creaTabSprite(beam, beam_nb);
+  beam = (sprite_t*)malloc(beam_nb * sizeof(sprite_t));
+  init_beam(beam, beam_nb, beam_picture);
 
     printf("\nLaunch the game : \n");
   /*Main loop : check event and re-draw the window until the end*/
@@ -234,9 +239,10 @@ applyEvent(&h1, tableEvent, &allowedToJump);
   free_Map (map, ROOM_HEIGHT);
   
   printf("\nFreeSurface .... \n");
-  SDL_FreeSurface(beam);
+  SDL_FreeSurface(beam_picture);
   SDL_FreeSurface(background);
   SDL_FreeSurface(screen);
+  SDL_FreeSurface(ennemy_picture);
   printf("FreeSurface successful \n");
 
   
