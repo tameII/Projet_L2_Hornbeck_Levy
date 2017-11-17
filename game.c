@@ -7,49 +7,17 @@
 #define NB_KEY 3
 
 
-#define BASE_LIFE 1
-#define BASE_ACCEL 0.1
-#define BASE_S_MAX 5
-#define BASE_JPOWER 1
-
-#define ACCEL_H1  0.1
-#define S_MAX_H1  1.5
-#define JPOWER_H1 3
-#define NB_SPRITE_H1 1
-#define SPRITE_SIZE_H1 64
-#define LIFE_H1 3
-
-
-#define TO_THE_LEFT -1
-#define TO_THE_RIGHT 1
-
 //////////////////////////////////
 void wipe_tab(int *tab, int N);
-void init_hero1(sprite_t *hero1, SDL_Surface *sprite_picture);
- 
-void handleEvent (SDL_Event event, int *quit,
-		  int tableEvent [NB_KEY], bool *allowedToJump);
 
+ 
+/*Event gestion*/
+void handleEvent (SDL_Event event, int *quit,
+		  int *tableEvent);
+void applyEvent (sprite_t *h1, int *tableEvent);
 void game ();
 
-/*fonction pour faire réapparaitre un sprite de l'autre coté coté de l'écran */
-/*Elle sert just pour les test pour le moment                                */
-/*J'ai retiré la possibilité de réapparaitre en bas depuis le haut           */
-/*(pour pas faire de FLOUSHFLOUSHFLOSHFLSHFSHFH a la portal)                 */
-void hyperespace(sprite_t *sprite, double *timerOfJump, bool *isJumping)
-{
-  if(sprite->physic.x < 0){   //He is passing through the left wall
-    sprite->physic.x = sprite->physic.x + SCREEN_WIDTH - sprite->size;
-  }
-  else if(sprite->physic.x > SCREEN_WIDTH - sprite->size){   //through the right wall
-    sprite->physic.x = sprite->physic.x - SCREEN_WIDTH + sprite->size;
-  }
-  if(sprite->physic.y > SCREEN_HEIGHT - sprite->size){   //if he fall to the bottom of the screen
-    sprite->physic.y = SCREEN_HEIGHT - sprite->size;
-    *timerOfJump = 0;
-    *isJumping = false;
-  }
-}
+
 
 //////////////////////////////////////////////////
 /*Put a 0 in all member of the tab*/
@@ -64,22 +32,12 @@ void wipe_tab(int *tab, int N)
 
 /*Initialisation of the main character*/
 /*h1 = heroe1*/
-void init_hero1(sprite_t *h1, SDL_Surface *sprite_picture)
-{
-  
-  spriteInit( h1, hero1,
-	      ACCEL_H1 , S_MAX_H1, JPOWER_H1,
-	      NB_SPRITE_H1, SPRITE_SIZE_H1,
-	      1, 1,          /*if we talk about a tab of sprite*/
-	      LIFE_H1,
-	      sprite_picture);
 
-}
 
 
 /*Event gestion*/
 void handleEvent (SDL_Event event, int *quit,
-		  int *tableEvent, bool *allowedToJump)
+		  int *tableEvent)
 {
   switch (event.type) {
     /*Close button pressed*/
@@ -120,32 +78,18 @@ void handleEvent (SDL_Event event, int *quit,
     case SDLK_SPACE:
     case SDLK_UP:
       tableEvent[2] = 0;
-      *allowedToJump = true;
       break;
     default:
       break;
     }
     break;
   }
-
-  /*if(tableEvent[0] == 1){
-    run(h1, TO_THE_LEFT);
-  }
-  
-  if(tableEvent[1] == 1){
-    run(h1, TO_THE_RIGHT);
-  }
-  
-  if(tableEvent[2] == 1){
-    jump(h1, isJumping);
-  }*/
 }
 
 /*this fonction call every event*/
-void applyEvent (sprite_t *h1, int *tableEvent, bool *isJumping, bool *allowedToJump)
+void applyEvent (sprite_t *h1, int *tableEvent)
 {
   if(tableEvent[0] == 1){
-    printf("va à gauche ducon");
     run(h1, TO_THE_LEFT);
   }
   
@@ -153,18 +97,21 @@ void applyEvent (sprite_t *h1, int *tableEvent, bool *isJumping, bool *allowedTo
     run(h1, TO_THE_RIGHT);
   }
   if(tableEvent[2] == 1){
-    jump(h1, isJumping, allowedToJump);
-    *allowedToJump = false;
+    jump(h1);
+    h1->physic.allowedToJump = false;
   }
 }
+
 /*Main function*/
 void game ()
 {
-  SDL_Surface *screen, *background, *beam, *h1_picture;
-
+  SDL_Surface *screen, *background, *beam_picture, *h1_picture, *ennemy_picture;
+  sprite_t *beam = NULL;
   sprite_t h1; //main character
-
+  sprite_t ennemies [MAX_ENNEMIES];  //tab of ennemies
+  int nbEnnemies = 0; //number of ennemies currently on the screen
   bool readed = false;
+  int beam_nb;
   /************************/
   
   char** map = NULL;
@@ -173,10 +120,7 @@ void game ()
 
   int tableEvent[NB_KEY];
   wipe_tab(tableEvent, NB_KEY);
-
-  double timerOfJump = 0;
-  bool isJumping = false;
-  bool allowedToJump = true;
+  int i;
   
   /*initialise SDL*/
   SDL_Init (SDL_INIT_VIDEO);
@@ -192,18 +136,24 @@ void game ()
 
   /*Picture Load:*/
   background = download_sprite_("background.bmp");
-  beam = download_sprite_("beam.bmp");
+  beam_picture = download_sprite_("beam.bmp");
   
-  h1_picture = download_sprite_("forwards.bmp");
+  
+  h1_picture = download_sprite_("h1.bmp");
+  ennemy_picture = download_sprite_("ennemy.bmp");
   set_colorkey_(h1_picture, 255, 0, 255, screen);
+  set_colorkey_(ennemy_picture, 255, 0, 255, screen);
   
   printf("\nPictures loaded \n");
-
+  
   /*InitSprite*/
   init_hero1(&h1, h1_picture);
   readMap("test.txt", map);
-
-
+  
+  beam_nb = countInTheMap(map, '1');
+  // creaTabSprite(beam, beam_nb);
+  beam = (sprite_t*)malloc(beam_nb * sizeof(sprite_t));
+  init_beam(beam, beam_nb, beam_picture);
 
     printf("\nLaunch the game : \n");
   /*Main loop : check event and re-draw the window until the end*/
@@ -213,18 +163,28 @@ void game ()
      * and shape of sprites                       */
     SDL_Event event;
     if (SDL_PollEvent(&event)) {
-      handleEvent (event, &quit, tableEvent, &allowedToJump);
+      handleEvent (event, &quit, tableEvent);
 	}
-    applyEvent(&h1, tableEvent, &isJumping, &allowedToJump);
+    applyEvent(&h1, tableEvent);
     /*Draw the background*/
-    displayMap(map, &h1, &readed, screen, background, beam);
+    displayMap(map, &h1, &readed, screen, background, beam, ennemies, &nbEnnemies, ennemy_picture);
 
     move(&h1);
-    brake(&h1, isJumping);
-    fall(&h1, &timerOfJump,  &isJumping);
-    hyperespace(&h1, &timerOfJump, &isJumping); //c'est juste pour pas me prendre la tete que j'ajoute ça
+    brake(&h1);
+    fall(&h1);
+    hyperespace(&h1); //c'est juste pour pas me prendre la tete que j'ajoute ça
     
+    animChar(&h1);
+    updateBody(&h1);
     drawSprite(&h1, screen);
+    printf("x = %d, y= %d \n",h1.position.x, h1.position.y);
+    for (i=0; i<beam_nb; i++){
+      collision(&beam[i], &h1);
+    }
+      
+    
+    ennemyPhysics(ennemies, screen, nbEnnemies, h1);
+    
     //SDL_BlitSurface(h1_picture, NULL, screen, &h1.position);
     /*update the screen*/
     SDL_UpdateRect(screen, 0, 0, 0, 0);
@@ -236,9 +196,10 @@ void game ()
   free_Map (map, ROOM_HEIGHT);
   
   printf("\nFreeSurface .... \n");
-  SDL_FreeSurface(beam);
+  SDL_FreeSurface(beam_picture);
   SDL_FreeSurface(background);
   SDL_FreeSurface(screen);
+  SDL_FreeSurface(ennemy_picture);
   printf("FreeSurface successful \n");
 
   
