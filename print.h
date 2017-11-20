@@ -29,10 +29,10 @@
 #define SPRITE_ATTACK_RIGHT 6
 #define SPRITE_ATTACK_LEFT 7 
 
-#define STICKMAN_HEIGHT 48          /*height of the body of the sticman */
-#define STICKMAN_WIDTH 15           /*width of the body of the sticman  */
-#define STICKMAN_X_GAP 23           /*gap on x between position and body*/
-#define STICKMAN_Y_GAP 5            /*gap on x between position and body*/
+#define STICKMAN_HEIGHT 60          /*height of the body of the sticman */
+#define STICKMAN_WIDTH 30           /*width of the body of the sticman  */
+#define STICKMAN_X_GAP 16           /*gap on x between position and body*/
+#define STICKMAN_Y_GAP 3            /*gap on x between position and body*/
 
 #define RUN_STEP 0.2
 
@@ -182,6 +182,8 @@ void fall(sprite_t *sprite);
 //////////////////////////////////////////////////////////
 void ennemyPhysics(sprite_t *ennemies, SDL_Surface *screen, int nbEnnemies, sprite_t h1);
 //////////////////////////////////////////////////////////
+
+
 void updateBody(sprite_t *stickman);
 int dist(int x1, int y1, int x2, int y2);
 void collision(sprite_t *sprite1, sprite_t *sprite2);
@@ -189,6 +191,16 @@ int minimum (int a, int b);
 int maximum (int a, int b);
 bool pointInTheBox(int x, int y, SDL_Rect box);
 bool collBetweenBox(SDL_Rect box1, SDL_Rect box2);
-int PosCompared (SDL_Rect box1, SDL_Rect box2);
+int posCompared (SDL_Rect box1, SDL_Rect box2);
+
+
+////////////////////////////////:
+/*Procedures test*/
+void testAllProcedure();
+void testPointInTheBox();
+void  testCollBetweenBox();
+void  testPosCompared();
+/////////////////////////////////////////////////////
+
 
 #endif

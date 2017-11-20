@@ -108,7 +108,7 @@ void initEnnemy(sprite_t *charac, int numberEnnemy, SDL_Surface *ennemy_picture)
 
 void init_beam(sprite_t *beam, int beam_nb, SDL_Surface *sprite_picture)
 {
-  printf("rentré dans init beam\n");
+
   int i;
   for(i=0; i<beam_nb; i++){
     //  printf("i = %d \n", i);
@@ -116,7 +116,7 @@ void init_beam(sprite_t *beam, int beam_nb, SDL_Surface *sprite_picture)
 	     8, beam_nb, 1, BASE_LIFE, 8, 8, sprite_picture);
     updateBody(&beam[i]);
   }
-  printf("init beam work\n");
+
 }
 
 ///////////////////////////////////////////////////////////
@@ -160,11 +160,11 @@ void displayMap (char** map, sprite_t *hero1, bool *readed,
 	  ennemies[currEnnemy].physic.x = j*8;
 	  ennemies[currEnnemy].physic.y = i*8;
 	  printf("7 readed\n");
-	  printf("x = %f  ||  y = %f\n",ennemies[currEnnemy].physic.x,ennemies[currEnnemy].physic.y);
+	  //  printf("x = %f  ||  y = %f\n",ennemies[currEnnemy].physic.x,ennemies[currEnnemy].physic.y);
 	  currEnnemy += 1;
-	  printf("currEnnemy = %d\n",currEnnemy);
+	  // printf("currEnnemy = %d\n",currEnnemy);
 	  *nbEnnemy += 1;
-	  printf("nbEnnemy = %d\n",*nbEnnemy);
+	  // printf("nbEnnemy = %d\n",*nbEnnemy);
 	}
 	break;
       default:
@@ -172,12 +172,12 @@ void displayMap (char** map, sprite_t *hero1, bool *readed,
       }
     }
   }
-  for (i=0; i<=*nbEnnemy; i++){
+  /*  for (i=0; i<=*nbEnnemy; i++){
     if (!*readed){
       printf("ennemy %d || x = %f || y = %f\n",i,ennemies[i].physic.x,ennemies[i].physic.y);
       printf("nbEnnemy = %d\n",*nbEnnemy);
     }
-  }
+    }*/
   *readed = true;
 }
 
@@ -291,32 +291,35 @@ void directionChar (sprite_t *character)
   if (character->physic.sx > 0 && character->physic.sx < RUN_STEP){
     // printf("standRight\n");
     character->currentPicture = SPRITE_STAND_RIGHT;
-    character->nb_sprite = 1;
+    character->nb_sprite = 4;
   }
   if (character->physic.sx < 0 && character->physic.sx > -RUN_STEP){
     //  printf("standLeft\n");
     character->currentPicture = SPRITE_STAND_LEFT;
-    character->nb_sprite = 1;
+    character->nb_sprite = 4;
   }
   if (character->physic.sx > 0 && character->physic.sx > RUN_STEP){
     // printf("runRight\n");
     character->currentPicture = SPRITE_RUN_RIGHT;
-    character->nb_sprite = 4;
+    character->nb_sprite = 8;
   }
   if (character->physic.sx < 0 && character->physic.sx < -RUN_STEP){
     //printf("runLeft \n");
     character->currentPicture = SPRITE_RUN_LEFT;
-    character->nb_sprite = 4;
+    character->nb_sprite = 8;
   }
 }
 
 void animChar (sprite_t *character)
 {
-
+  
   directionChar(character);
   character->picture.y = character->size * character->currentPicture;
-
+  character->count += 1;
+  if (character->count >= 70){
   animSprite(&character->picture, character->nb_sprite, character->size);
+  character->count = 0;
+  }
   /*
   printf("character->nb_sprite : %d \n", character->nb_sprite);
   printf("character->size : %d \n", character->size);
@@ -414,7 +417,7 @@ void fall(sprite_t *sprite)
 
 void ennemyPhysics(sprite_t *ennemies, SDL_Surface *screen, int nbEnnemies, sprite_t h1)
 {
-  double distx, disty;
+  double distx; // disty;
   int i;
   for (i = 0; i <= nbEnnemies; i++){
     //find the distance sepearating the ennemy and the hero
@@ -460,7 +463,7 @@ void collision(sprite_t *sprite1, sprite_t *sprite2)
   int dir;
 
   if(collBetweenBox(sprite1->body, sprite2->body)){
-   dir = PosCompared(sprite1->body, sprite2->body);
+   dir = posCompared(sprite1->body, sprite2->body);
    switch (dir) {
    case COLL_LEFT:
      //printf("Switch collision Left \n");
@@ -483,10 +486,12 @@ void collision(sprite_t *sprite1, sprite_t *sprite2)
    default:
      break;
    }
-  printf("coll");
+
   }
 
 }
+
+
 
 /*the point (x,y) it is in the box ?? true if yes*/
 bool pointInTheBox(int x, int y, SDL_Rect box)
@@ -520,6 +525,8 @@ bool pointInTheBox(int x, int y, SDL_Rect box)
    }
    return res;
 }*/
+
+/*Fonction qui retourne le minimum de deux entiers*/
 int minimum (int a, int b)
 {
   if (a < b ) {
@@ -531,7 +538,7 @@ int minimum (int a, int b)
 }
 
 
-//Fonction qui retourne le maximum de deux nombres 
+//Fonction qui retourne le maximum de deux entiers 
 int maximum (int a, int b)
 {
   if (a > b) {
@@ -562,7 +569,7 @@ bool collBetweenBox(SDL_Rect box1, SDL_Rect box2)
 /* retourne un int correspondant la position  *
  * de la box2 par rapport a celle de la box1 *
  * Donc on renvoie la pos de box1             */
-int PosCompared (SDL_Rect box1, SDL_Rect box2)
+int posCompared (SDL_Rect box1, SDL_Rect box2)
 {
   int res = 0;
   int distUp, distDown, distLeft, distRight;  //squares of the lenghts of the rectangle made by the collision
@@ -634,4 +641,210 @@ int PosCompared (SDL_Rect box1, SDL_Rect box2)
   }
   //printf("res = %d\n", res);
   return res;
+}
+
+//////////////////////////////////////////////////////////::
+/*test.c*/
+void testAllProcedure()
+{
+  testPointInTheBox();
+  testCollBetweenBox();
+  testPosCompared();
+}
+/*Test : pointInTheBox(int x, int y, SDL_Rect Box)*/
+void testPointInTheBox()
+{
+  SDL_Rect box;
+  int x;
+  int y;
+  box.x = 10;
+  box.y = 10;
+  box.w = 5;
+  box.h = 5;
+  printf("Testing pointInTheBox with a box like : \n");
+  printf("box.x = %d, box.y = %d, box.w = %d, box.h = %d  \n", box.x, box.y, box.w, box.h);
+
+  x = 0;
+  y = 0;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+
+  /*Test de la diagonale*/
+  x = 9;
+  y = 9;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  x = 10;
+  y = 10;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  x = 11;
+  y = 11;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  x = 12;
+  y = 12;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  x = 13;
+  y = 13;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  x = 14;
+  y = 14;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  x = 15;
+  y = 15;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  x = 16;
+  y = 16;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+
+  /*Test des droites horizontale  et verticales*/
+  x = 10;
+  y = 11;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  x = 10;
+  y = 14;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  x = 11;
+  y = 10;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  x = 13;
+  y = 10;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  /*Test de cas particuliers*/
+  x = 12;
+  y = 13;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  
+  printf("\n");
+
+}
+
+
+/*test : CollBetweenBox(SDL_Rect box1, SDL_Rect box2)*/
+void testCollBetweenBox()
+{
+  printf("testCollBetweenBox : \n");
+  SDL_Rect box1, box2;
+
+  box1.x = 0;
+  box1.y = 0;
+  box1.h = 5;
+  box1.w = 5;
+
+  box2.x = 0;
+  box2.y = 0;
+  box2.h = 5;
+  box2.w = 5;
+  if(collBetweenBox(box1, box2)){
+    printf("Test think there is collision beetwen these : \n");
+    printf("Box1 : x: %d; y: %d; w: %d; h: %d \n",box1.x, box1.y, box1.h, box1.w);
+    printf("Box2 : x: %d; y: %d; w: %d; h: %d \n",box2.x, box2.y, box2.h, box2.w);
+    printf("\n");
+  }
+
+  box1.x = 0;
+  box1.y = 0;
+  box1.h = 5;
+  box1.w = 5;
+
+  box2.x = 2;
+  box2.y = 2;
+  box2.h = 5;
+  box2.w = 5;
+  if(collBetweenBox(box1, box2)){
+    printf("Test think there is collision beetwen these : \n");
+    printf("Box1 : x: %d; y: %d; w: %d; h: %d \n",box1.x, box1.y, box1.h, box1.w);
+    printf("Box2 : x: %d; y: %d; w: %d; h: %d \n",box2.x, box2.y, box2.h, box2.w);
+    printf("\n");
+  }
+  
+  box1.x = 0;
+  box1.y = 0;
+  box1.h = 5;
+  box1.w = 5;
+
+  box2.x = 1;
+  box2.y = 1;
+  box2.h = 2;
+  box2.w = 5;
+  if(collBetweenBox(box1, box2)){
+    printf("Test think there is collision beetwen these : \n");
+    printf("Box1 : x: %d; y: %d; w: %d; h: %d \n",box1.x, box1.y, box1.h, box1.w);
+    printf("Box2 : x: %d; y: %d; w: %d; h: %d \n",box2.x, box2.y, box2.h, box2.w);
+    printf("\n");
+  }
+
+  
+  box1.x = 0;
+  box1.y = 0;
+  box1.h = 5;
+  box1.w = 5;
+
+  box2.x = 10;
+  box2.y = 10;
+  box2.h = 5;
+  box2.w = 5;
+  if(collBetweenBox(box1, box2)){
+    printf("Test think there is collision beetwen these : \n");
+    printf("Box1 : x: %d; y: %d; w: %d; h: %d \n",box1.x, box1.y, box1.h, box1.w);
+    printf("Box2 : x: %d; y: %d; w: %d; h: %d \n",box2.x, box2.y, box2.h, box2.w);
+    printf("\n");
+  }
+  
+}
+
+
+/*test : int PosCompared (SDL_Rect box1, SDL_Rect box2)*/
+void  testPosCompared()
+{
+  
+  printf("testposCompared : \n");
+  
+  printf("left = %d \n", COLL_LEFT);
+  printf("right = %d \n",COLL_RIGHT);
+  printf("up = %d \n", COLL_UP);
+  printf("down = %d \n", COLL_DOWN);
+  printf("Start the test : \n");
+  SDL_Rect box1, box2;
+  int dir;
+  box1.x = 0;
+  box1.y = 0;
+  box1.h = 5;
+  box1.w = 5;
+
+  box2.x = 0;
+  box2.y = 0;
+  box2.h = 5;
+  box2.w = 5;
+
+  dir = posCompared(box1, box2);
+  printf("dir = %d \n", dir);
+  printf("Box1 : x: %d; y: %d; w: %d; h: %d \n",box1.x, box1.y, box1.h, box1.w);
+  printf("Box2 : x: %d; y: %d; w: %d; h: %d \n",box2.x, box2.y, box2.h, box2.w);
+  printf("\n");
 }

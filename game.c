@@ -155,6 +155,11 @@ void game ()
   beam = (sprite_t*)malloc(beam_nb * sizeof(sprite_t));
   init_beam(beam, beam_nb, beam_picture);
 
+
+  /*Testing procedure....*/
+  printf("Testing procedure... \n");
+  testAllProcedure();
+  
     printf("\nLaunch the game : \n");
   /*Main loop : check event and re-draw the window until the end*/
   while (!quit){
@@ -177,7 +182,7 @@ void game ()
     animChar(&h1);
     updateBody(&h1);
     drawSprite(&h1, screen);
-    printf("x = %d, y= %d \n",h1.position.x, h1.position.y);
+    // printf("x = %d, y= %d \n",h1.position.x, h1.position.y);
     for (i=0; i<beam_nb; i++){
       collision(&beam[i], &h1);
     }
