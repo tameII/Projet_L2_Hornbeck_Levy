@@ -292,22 +292,40 @@ void directionChar (sprite_t *character)
     // printf("standRight\n");
     character->currentPicture = SPRITE_STAND_RIGHT;
     character->nb_sprite = 4;
+    if(character->physic.sy > JUMP_STEP || character->physic.sy < -JUMP_STEP){
+      character->currentPicture = SPRITE_JUMP_RIGHT;
+      character->nb_sprite = 4;
+    } 
   }
   if (character->physic.sx < 0 && character->physic.sx > -RUN_STEP){
     //  printf("standLeft\n");
     character->currentPicture = SPRITE_STAND_LEFT;
     character->nb_sprite = 4;
+    if(character->physic.sy > JUMP_STEP || character->physic.sy < -JUMP_STEP){
+      character->currentPicture = SPRITE_JUMP_LEFT;
+      character->nb_sprite = 4;
+    } 
   }
   if (character->physic.sx > 0 && character->physic.sx > RUN_STEP){
     // printf("runRight\n");
     character->currentPicture = SPRITE_RUN_RIGHT;
     character->nb_sprite = 8;
+    if(character->physic.sy > JUMP_STEP || character->physic.sy < -JUMP_STEP){
+      character->currentPicture = SPRITE_JUMP_RIGHT;
+      character->nb_sprite = 4;
+    }
   }
   if (character->physic.sx < 0 && character->physic.sx < -RUN_STEP){
     //printf("runLeft \n");
     character->currentPicture = SPRITE_RUN_LEFT;
     character->nb_sprite = 8;
+    if(character->physic.sy > JUMP_STEP || character->physic.sy < -JUMP_STEP){
+      character->currentPicture = SPRITE_JUMP_LEFT;
+      character->nb_sprite = 4;
+    } 
   }
+
+
 }
 
 void animChar (sprite_t *character)
@@ -316,7 +334,7 @@ void animChar (sprite_t *character)
   directionChar(character);
   character->picture.y = character->size * character->currentPicture;
   character->count += 1;
-  if (character->count >= 70){
+  if (character->count >= 100){
   animSprite(&character->picture, character->nb_sprite, character->size);
   character->count = 0;
   }

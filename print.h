@@ -17,7 +17,7 @@
 #define SCREEN_HEIGHT 720
 
 
-#define GRAVITY -0.7
+#define GRAVITY -0.3
 #define FROTTEMENT 1.1
 
 #define SPRITE_STAND_RIGHT 0
@@ -35,10 +35,11 @@
 #define STICKMAN_Y_GAP 3            /*gap on x between position and body*/
 
 #define RUN_STEP 0.2
+#define JUMP_STEP 0.2
 
-#define ACCEL_H1  0.2
+#define ACCEL_H1  0.05
 #define S_MAX_H1  1.5
-#define JPOWER_H1 3
+#define JPOWER_H1 2
 #define NB_SPRITE_H1 1
 #define SPRITE_SIZE_H1 64
 #define LIFE_H1 3
