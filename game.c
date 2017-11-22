@@ -50,7 +50,6 @@ void handleEvent (SDL_Event event, int *quit,
   case SDL_KEYDOWN:
     switch (event.key.keysym.sym){
     case SDLK_ESCAPE:
-    case SDLK_q:
       *quit = 1;
       break;
     case SDLK_LEFT:
@@ -134,6 +133,9 @@ void game ()
   /*Set keyboard repeat*/
   SDL_EnableKeyRepeat(10, 10);
 
+
+
+
   /*Picture Load:*/
   background = download_sprite_("background.bmp");
   beam_picture = download_sprite_("beam.bmp");
@@ -158,9 +160,9 @@ void game ()
 
   /*Testing procedure....*/
   printf("Testing procedure... \n");
-  testAllProcedure();
+  testAllProcedure(screen);
   
-    printf("\nLaunch the game : \n");
+  printf("\nLaunch the game : \n");
   /*Main loop : check event and re-draw the window until the end*/
   while (!quit){
 

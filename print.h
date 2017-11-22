@@ -29,8 +29,8 @@
 #define SPRITE_ATTACK_RIGHT 6
 #define SPRITE_ATTACK_LEFT 7 
 
-#define STICKMAN_HEIGHT 60          /*height of the body of the sticman */
-#define STICKMAN_WIDTH 30           /*width of the body of the sticman  */
+#define STICKMAN_HEIGHT 60          /*height of the body of the stickman */
+#define STICKMAN_WIDTH 30           /*width of the body of the stickman  */
 #define STICKMAN_X_GAP 16           /*gap on x between position and body*/
 #define STICKMAN_Y_GAP 3            /*gap on x between position and body*/
 
@@ -197,10 +197,10 @@ int posCompared (SDL_Rect box1, SDL_Rect box2);
 
 ////////////////////////////////:
 /*Procedures test*/
-void testAllProcedure();
+void testAllProcedure(SDL_Surface *screen);
 void testPointInTheBox();
-void  testCollBetweenBox();
-void  testPosCompared();
+void testCollBetweenBox();
+void testPosCompared(SDL_Surface *screen);
 /////////////////////////////////////////////////////
 
 

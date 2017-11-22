@@ -568,11 +568,10 @@ int maximum (int a, int b)
 }
 
 
-
 //Fonction qui permet la collision entre 2 objets
 bool collBetweenBox(SDL_Rect box1, SDL_Rect box2)
 {
-  if ( maximum ( box1.x , box2.x ) <= minimum ( ( box1.x + box2.w ) ,
+  if ( maximum ( box1.x , box2.x ) <= minimum ( ( box1.x + box1.w ) ,
        ( box2.x + box2.w ) ) )
   {
   if ( maximum (box1.y , box2.y ) <= minimum ( ( box1.y + box1.h ) ,
@@ -587,10 +586,14 @@ bool collBetweenBox(SDL_Rect box1, SDL_Rect box2)
 /* retourne un int correspondant la position  *
  * de la box2 par rapport a celle de la box1 *
  * Donc on renvoie la pos de box1             */
+/*BUGUEE DE FOU NE PAS UTILISER*/
 int posCompared (SDL_Rect box1, SDL_Rect box2)
 {
   int res = 0;
   int distUp, distDown, distLeft, distRight;  //squares of the lenghts of the rectangle made by the collision
+  
+
+  /*
   if(pointInTheBox(box1.x, box1.y, box2)){ //haut gauche
     if(pointInTheBox(box1.x, box1.y + box1.h, box2)){ //bas gauche
       //printf("Collision pts : HG et BG (a G ) \n");
@@ -605,13 +608,13 @@ int posCompared (SDL_Rect box1, SDL_Rect box2)
       distUp = dist(box1.x, box1.y, box2.x + box2.w, box1.x);
       distLeft = dist(box1.x, box1.y, box1.x, box2.y + box2.h);
       if (distLeft >= distUp){
-	res = COLL_LEFT; /*box2 on the left of box1*/
+	res = COLL_LEFT; 
       }
       else {
-	res = COLL_UP;  /*box2 above box1*/
+	res = COLL_UP;  
       }
     }
-  }
+  }x
   if(pointInTheBox(box1.x + box1.w, box1.y, box2)){ //bas gauche
     if(pointInTheBox(box1.x + box1.w, box1.y + box1.h, box2)){ //bas droite
       //printf("Collision pts : BG + BD ( en B ) \n");
@@ -622,20 +625,20 @@ int posCompared (SDL_Rect box1, SDL_Rect box2)
       distLeft = dist(box1.x, box1.y + box1.h, box1.x, box2.y);
       distDown = dist(box1.x, box1.y + box1.h, box2.x + box2.w, box1.y + box1.h);
       if(distLeft >= distDown){
-	res = COLL_LEFT;  /*box2 on the left of box1*/
+	res = COLL_LEFT; 
       }
       else {
-	res = COLL_DOWN; /*box2 under box1*/
+	res = COLL_DOWN; 
       }
     }
   }
   if(pointInTheBox(box1.x, box1.y + box1.h, box2)){ //haut droite
     if(pointInTheBox(box1.x + box1.w, box1.y + box1.h, box2)){ //bas droite
-      //printf("Collision pts : HD + BD ( a D ) \n");
+
       res = COLL_RIGHT;
     }
     else{
-      //printf("Collision pts : HD \n");
+
       distUp = dist(box1.x + box1.w, box1.y, box2.x, box1.y);
       distRight = dist(box1.x + box1.h, box1.y, box1.x + box1.w, box2.y + box2.h);
       if (distRight >= distUp){
@@ -647,7 +650,7 @@ int posCompared (SDL_Rect box1, SDL_Rect box2)
     }
   }
   if(pointInTheBox(box1.x + box1.w, box1.y + box1.h, box2)){ //bas droite
-    //printf("Collision pts : BD \n");
+ 
     distDown = dist(box1.x, box1.y, box2.x + box2.w, box1.y);
     distRight = dist(box1.x, box1.y, box1.x, box2.y + box2.h);
     if (distRight >= distDown){
@@ -657,17 +660,19 @@ int posCompared (SDL_Rect box1, SDL_Rect box2)
       res = COLL_DOWN;
     }
   }
+*/
   //printf("res = %d\n", res);
+
   return res;
 }
 
 //////////////////////////////////////////////////////////::
 /*test.c*/
-void testAllProcedure()
+void testAllProcedure(SDL_Surface *screen)
 {
   testPointInTheBox();
   testCollBetweenBox();
-  testPosCompared();
+  testPosCompared(screen);
 }
 /*Test : pointInTheBox(int x, int y, SDL_Rect Box)*/
 void testPointInTheBox()
@@ -837,32 +842,129 @@ void testCollBetweenBox()
 }
 
 
-/*test : int PosCompared (SDL_Rect box1, SDL_Rect box2)*/
-void  testPosCompared()
+/*Event gestion : THIS IS FOR THE SCREEN TESTING*/
+void handleEventTest (SDL_Event event, int *quit,
+		  int *next, int *endTest, int *pleaseTest, SDL_Rect *box2)
 {
+  bool canpress = true;
+  switch (event.type) {
+    /*Close button pressed*/
+  case SDL_QUIT:
+    *quit=1;
+    break;
+    
+      
+    /*handle keyboards*/
+  case SDL_KEYDOWN:
+    switch (event.key.keysym.sym){
+    case SDLK_ESCAPE:
+      *quit = 1;
+      break;
+    case SDLK_q:
+      *endTest = 1;
+      break;
+    case SDLK_RETURN:
+	*next += 1;
+      break;
+    case SDLK_BACKSPACE:
+      *next -= 1;
+      break;
+    case SDLK_SPACE:
+      *pleaseTest = true;
+      break;
+    case SDLK_RIGHT:
+      box2->x +=1;
+      break;
+    case SDLK_LEFT:
+      box2->x -= 1;
+      break;
+    case SDLK_UP:
+      box2->y -= 1;
+      break;
+    case SDLK_DOWN:
+      box2->y += 1;
+      break;
+    default:
+      break;
+    }
+    break;
+
+  }
   
-  printf("testposCompared : \n");
-  
-  printf("left = %d \n", COLL_LEFT);
-  printf("right = %d \n",COLL_RIGHT);
-  printf("up = %d \n", COLL_UP);
-  printf("down = %d \n", COLL_DOWN);
-  printf("Start the test : \n");
+  if(*next == 10){
+    *endTest = 1;
+  }
+}
+
+
+/*test : int PosCompared (SDL_Rect box1, SDL_Rect box2)*/
+void  testPosCompared(SDL_Surface *screen)
+{
+  /*Create box to see in game*/
+  SDL_Surface  *background_test;
+  SDL_Surface *box1_picture, *box2_picture;
   SDL_Rect box1, box2;
   int dir;
-  box1.x = 0;
-  box1.y = 0;
-  box1.h = 5;
-  box1.w = 5;
+  int quit = 0;
+  int endTest = 0;
+  int pleaseTest = 1;
+  int next = 1;
+  bool init = false;
 
-  box2.x = 0;
-  box2.y = 0;
-  box2.h = 5;
-  box2.w = 5;
+  background_test = download_sprite_("background.bmp");
+  box1_picture = download_sprite_("box1.bmp"); 
+  box2_picture = download_sprite_("box2.bmp");
 
-  dir = posCompared(box1, box2);
-  printf("dir = %d \n", dir);
-  printf("Box1 : x: %d; y: %d; w: %d; h: %d \n",box1.x, box1.y, box1.h, box1.w);
-  printf("Box2 : x: %d; y: %d; w: %d; h: %d \n",box2.x, box2.y, box2.h, box2.w);
-  printf("\n");
+  /*begin test*/
+  printf("testposCompared : \n");
+  while (!endTest && !quit){
+    if(!init){
+      printf("left = %d \n", COLL_LEFT);
+      printf("right = %d \n",COLL_RIGHT);
+      printf("up = %d \n", COLL_UP);
+      printf("down = %d \n", COLL_DOWN);
+      printf("Start the test : \n");
+
+      box1.x = 500;
+      box1.y = 250;
+      box1.h = 64;
+      box1.w = 64;
+
+      box2.x = 500;
+      box2.y = 250;
+      box2.h = 64;
+      box2.w = 64;
+
+      init = true;
+    }
+    if(pleaseTest){
+      dir = posCompared(box1, box2);
+      printf("dir = %d \n", dir);
+      printf("Box1 : x: %d; y: %d; w: %d; h: %d \n",box1.x, box1.y,
+	     box1.h, box1.w);
+      printf("Box2 : x: %d; y: %d; w: %d; h: %d \n",box2.x, box2.y,
+	     box2.h, box2.w);
+      printf("\n");
+      pleaseTest = 0;
+    }
+    SDL_Event event;
+    if (SDL_PollEvent(&event)) {
+      handleEventTest (event, &quit, &next, &endTest, &pleaseTest, &box2);
+    }
+
+    SDL_BlitSurface(background_test, NULL, screen, NULL);
+    SDL_BlitSurface(box1_picture, NULL, screen, &box1);
+    SDL_BlitSurface(box2_picture, NULL, screen, &box2);
+
+
+    SDL_UpdateRect(screen, 0, 0, 0, 0);
+  }
+  /*Free the SDL_Surface*/
+  SDL_FreeSurface(background_test);
+  SDL_FreeSurface(box1_picture);
+  SDL_FreeSurface(box2_picture);
+
 }
+
+
+  
