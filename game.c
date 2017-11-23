@@ -1,10 +1,10 @@
 /*this is the file which reunites all the functions*/
 /*Brandon Hornbeck*/
-/*Mathieu Levy*/
+/*Mathieu Levy*/ 
 
 #include "print.h"
 
-#define NB_KEY 3
+#define NB_KEY 4
 
 
 //////////////////////////////////
@@ -50,6 +50,7 @@ void handleEvent (SDL_Event event, int *quit,
   case SDL_KEYDOWN:
     switch (event.key.keysym.sym){
     case SDLK_ESCAPE:
+    case SDLK_q:
       *quit = 1;
       break;
     case SDLK_LEFT:
@@ -58,9 +59,11 @@ void handleEvent (SDL_Event event, int *quit,
     case SDLK_RIGHT:
       tableEvent[1] = 1;
       break;
-    case SDLK_SPACE:
     case SDLK_UP:
       tableEvent[2] = 1;
+      break;
+    case SDLK_SPACE:
+      tableEvent[3] = 1;
       break;
     default:
       break;
@@ -74,10 +77,11 @@ void handleEvent (SDL_Event event, int *quit,
     case SDLK_RIGHT:
       tableEvent[1] = 0;
       break;
-    case SDLK_SPACE:
     case SDLK_UP:
       tableEvent[2] = 0;
       break;
+    case SDLK_SPACE:
+      tableEvent[3] = 0;
     default:
       break;
     }
@@ -98,6 +102,16 @@ void applyEvent (sprite_t *h1, int *tableEvent)
   if(tableEvent[2] == 1){
     jump(h1);
     h1->physic.allowedToJump = false;
+  }
+  if(tableEvent[2] == 0){
+    h1->physic.allowedToJump = true;
+  }
+  if(tableEvent[3] == 1){
+    hit(h1);
+    h1->physic.allowedToHit = false;
+  }
+  if(tableEvent[3] == 0){
+  h1->physic.allowedToHit = true;
   }
 }
 
@@ -133,16 +147,13 @@ void game ()
   /*Set keyboard repeat*/
   SDL_EnableKeyRepeat(10, 10);
 
-
-
-
   /*Picture Load:*/
   background = download_sprite_("background.bmp");
   beam_picture = download_sprite_("beam.bmp");
   
   
   h1_picture = download_sprite_("h1.bmp");
-  ennemy_picture = download_sprite_("ennemy.bmp");
+  ennemy_picture = download_sprite_("ennemy2.bmp");
   set_colorkey_(h1_picture, 255, 0, 255, screen);
   set_colorkey_(ennemy_picture, 255, 0, 255, screen);
   
@@ -162,7 +173,7 @@ void game ()
   printf("Testing procedure... \n");
   testAllProcedure(screen);
   
-  printf("\nLaunch the game : \n");
+    printf("\nLaunch the game : \n");
   /*Main loop : check event and re-draw the window until the end*/
   while (!quit){
 
@@ -185,11 +196,12 @@ void game ()
     updateBody(&h1);
     drawSprite(&h1, screen);
     // printf("x = %d, y= %d \n",h1.position.x, h1.position.y);
-    for (i=0; i<beam_nb; i++){
+    /*for (i=0; i<beam_nb; i++){
       collision(&beam[i], &h1);
-    }
+    }*/
       
-    
+    placeHitPoint(&h1);
+    //printf("hit X = %d et hit Y = %d\n", h1.physic.attackX, h1.physic.attackY);
     ennemyPhysics(ennemies, screen, nbEnnemies, h1);
     
     //SDL_BlitSurface(h1_picture, NULL, screen, &h1.position);

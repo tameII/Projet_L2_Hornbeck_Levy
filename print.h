@@ -5,7 +5,7 @@
 #ifndef PRINT_H
 #define PRINT_H
 
-#include <stdbool.h>
+#include <stdbool.h> 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -17,7 +17,7 @@
 #define SCREEN_HEIGHT 720
 
 
-#define GRAVITY -0.3
+#define GRAVITY -0.1
 #define FROTTEMENT 1.1
 
 #define SPRITE_STAND_RIGHT 0
@@ -29,13 +29,13 @@
 #define SPRITE_ATTACK_RIGHT 6
 #define SPRITE_ATTACK_LEFT 7 
 
-#define STICKMAN_HEIGHT 60          /*height of the body of the stickman */
-#define STICKMAN_WIDTH 30           /*width of the body of the stickman  */
+#define STICKMAN_HEIGHT 60          /*height of the body of the sticman */
+#define STICKMAN_WIDTH 30           /*width of the body of the sticman  */
 #define STICKMAN_X_GAP 16           /*gap on x between position and body*/
 #define STICKMAN_Y_GAP 3            /*gap on x between position and body*/
 
 #define RUN_STEP 0.2
-#define JUMP_STEP 0.2
+#define JUMP_STEP 0
 
 #define ACCEL_H1  0.05
 #define S_MAX_H1  1.5
@@ -45,7 +45,7 @@
 #define LIFE_H1 3
 
 #define MAX_ENNEMIES 100
-#define ACCEL_ENNEMY 0.2
+#define ACCEL_ENNEMY 0.07
 #define S_MAX_ENNEMY 1.5
 #define JPOWER_ENNEMY 3
 #define NB_SPRITE_ENNEMY 1
@@ -62,7 +62,7 @@
 #define BASE_ACCEL 0.1
 #define BASE_S_MAX 5
 #define BASE_JPOWER 1
-#define HIT_RANGE 100
+#define HIT_RANGE 50
 
 
 
@@ -92,6 +92,10 @@ struct Physic_t{
   bool inTheAir; /*true if the sprite is in the air*/
   bool allowedToJump;
   double timerOfJump;
+  bool isAttacking; /*true if is attacking*/
+  int attackX;  /*attack point*/
+  int attackY;
+  bool allowedToHit;
 };
 
 typedef struct Physic_t physic_t;
@@ -136,7 +140,7 @@ void spriteInit(sprite_t *sprite, sprite_type type,
 void init_hero1(sprite_t *hero1, SDL_Surface *sprite_picture);
 void initEnnemy(sprite_t *charac, int numberEnnemy, SDL_Surface *ennemy_picture);
 void init_beam(sprite_t *beam, int beam_nb, SDL_Surface *sprite_picture);
-
+void updateBeam(sprite_t *beam);
 /////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////
 
@@ -163,12 +167,12 @@ void drawSprite(sprite_t *sprite, SDL_Surface *screen);
 
 /*animation.h*/
 
-void animSprite ( SDL_Rect * picture, int nbSprite,
-		  int spriteSize);
+void animSprite (sprite_t *character);
 void directionChar (sprite_t *character);
 void animChar (sprite_t *character);
-
+void endAttack(sprite_t *character);
 //////////////////////////////////////////////////////////
+
 //////////////////////////////////////////////////////////
 
 /*physics.h*/
@@ -180,6 +184,8 @@ void jumping (sprite_t *character);
 
 void jump(sprite_t *character);
 void fall(sprite_t *sprite);
+void hit(sprite_t *character);
+void placeHitPoint (sprite_t *character);
 //////////////////////////////////////////////////////////
 void ennemyPhysics(sprite_t *ennemies, SDL_Surface *screen, int nbEnnemies, sprite_t h1);
 //////////////////////////////////////////////////////////
@@ -192,7 +198,7 @@ int minimum (int a, int b);
 int maximum (int a, int b);
 bool pointInTheBox(int x, int y, SDL_Rect box);
 bool collBetweenBox(SDL_Rect box1, SDL_Rect box2);
-int posCompared (SDL_Rect box1, SDL_Rect box2);
+void posCompared (SDL_Rect box1, SDL_Rect box2, int *px, int *py);
 
 
 ////////////////////////////////:
@@ -201,7 +207,6 @@ void testAllProcedure(SDL_Surface *screen);
 void testPointInTheBox();
 void testCollBetweenBox();
 void testPosCompared(SDL_Surface *screen);
-/////////////////////////////////////////////////////
 
 
 #endif
