@@ -306,7 +306,7 @@ void animSprite (sprite_t *character)
     }
   }
 }
-/*JAI CHANGE CA FDP*/
+/*JAI CHANGE CA*/
 void directionChar (sprite_t *character)
 {
   if(!character->physic.isAttacking){
@@ -622,10 +622,7 @@ int dist(int x1, int y1, int x2, int y2)
   dist = ((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1));
   return dist;
 }
-/*check collide & place the sprite2 in the right place*/
-void collision4Beam(){
-/*CETTE FONCTION SERVIRA VU QUON DOIT GERER DIFFEREMENT LES STICKMAN ET LES BLOCS*/
-}
+
 /*check collide & place the sprite2 in the right place*/
 void collision(sprite_t *sprite1, sprite_t *sprite2)
 {
@@ -633,37 +630,46 @@ void collision(sprite_t *sprite1, sprite_t *sprite2)
   int px, py;
   
   /*Les coordonées du sprite2 avec les tailles w et h*/
-  double sprite2X = sprite2->physic.x;
-  double sprite2Y = sprite2->physic.y;
-  // double sprite2W = sprite2->body.w;
-  // double sprite2H = sprite2->body.h; 
+  double sprite2X = sprite2->body.x;
+  double sprite2Y = sprite2->body.y;
+  double sprite2W = sprite2->body.w;
+  double sprite2H = sprite2->body.h; 
 
 
   /*Les coordonées du sprite1 avec les tailles w et h*/
-  double sprite1X = sprite1->physic.x;
-  // double sprite1Y = sprite1->physic.y;
+  double sprite1X = sprite1->body.x;
+  double sprite1Y = sprite1->body.y;
   double sprite1W = sprite1->body.w;
-  //  double sprite1H = sprite1->body.h;
+  double sprite1H = sprite1->body.h;
 
   if(collBetweenBox(sprite1->body, sprite2->body)){
     posCompared(sprite1->body, sprite2->body, &px, &py);
     // printf("px : %d, py : %d",px,py);
     if(px == 0 && py == 0){
-      // printf("rentre bien dans condition 0 0");
-      sprite2X = sprite1X + sprite1W + 1; //right
+      sprite2X = sprite1X + sprite1W; //right
     } 
     if(px == COLL_LEFT && py == 0){
-      //  printf("rentre bien dans condition LEFT 0");
-      sprite2X = sprite1X - sprite1W - 1; //left
+      sprite2X = sprite1X - sprite1W; //left
+      
     }
     if(px == COLL_RIGHT && py == 0){
-      //  printf("rentre bien dans condition RIGHT 0");
-      sprite2X = sprite1X + sprite1W + 1; //right 
+      sprite2X = sprite1X + sprite1W; //right 
     }
-
-    sprite2->physic.x = sprite2X;
-    sprite2->physic.y = sprite2Y;  
+    if(py == COLL_DOWN){
+      sprite2Y = sprite1Y + sprite1H;
+    }
+    if(py == COLL_UP){
+      sprite2Y = sprite1Y - sprite1H; //up
+      sprite2->physic.inTheAir = false;
+    }
+    sprite2->body.x = sprite2X;
+    sprite2->body.y = sprite2Y;  
   }
+  else{
+    printf("no collision");
+    sprite2->physic.inTheAir = true;
+  }
+  
   
 }
 

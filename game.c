@@ -161,9 +161,10 @@ void game ()
   
   /*InitSprite*/
   init_hero1(&h1, h1_picture);
-  readMap("test.txt", map);
+  readMap("test_collision.txt", map);
   
   beam_nb = countInTheMap(map, '1');
+  printf("beam_nb :%d", beam_nb);
   // creaTabSprite(beam, beam_nb);
   beam = (sprite_t*)malloc(beam_nb * sizeof(sprite_t));
   init_beam(beam, beam_nb, beam_picture);
@@ -196,9 +197,9 @@ void game ()
     updateBody(&h1);
     drawSprite(&h1, screen);
     // printf("x = %d, y= %d \n",h1.position.x, h1.position.y);
-    /*for (i=0; i<beam_nb; i++){
+    for (i=0; i<beam_nb; i++){
       collision(&beam[i], &h1);
-    }*/
+    }
       
     placeHitPoint(&h1);
     //printf("hit X = %d et hit Y = %d\n", h1.physic.attackX, h1.physic.attackY);
