@@ -1,7 +1,7 @@
 /*this is the file where every display function is encoded*/
 
-#include "print.h"
-
+#include "print.h" 
+ 
 /*fonction pour faire réapparaitre un sprite de l'autre coté coté de l'écran */
 /*Elle sert just pour les test pour le moment                                */
 /*J'ai retiré la possibilité de réapparaitre en bas depuis le haut           */
@@ -16,9 +16,6 @@ void hyperespace(sprite_t *sprite)
   }
   if(sprite->physic.y > SCREEN_HEIGHT - sprite->size){
     sprite->physic.y = SCREEN_HEIGHT - sprite->size;
-    sprite->physic.timerOfJump = 0;
-    sprite->physic.inTheAir = false;
-    sprite->physic.allowedToJump = true;
   }
 }
 
@@ -53,26 +50,27 @@ void spriteInit(sprite_t *sprite, sprite_type type,
 		int nb_sprite,
 		int sprite_size,
 		int sprite_number, int max_number,
-		int life, int bodyHeight, int bodyWidth,
+		int life,
 		SDL_Surface * sprite_picture)
 {
 
   sprite->type = type;
   sprite->physic.x =  0;
+
   sprite->physic.y =  0;
   sprite->physic.sx = 0;
   sprite->physic.sy = 0;
   sprite->physic.a = accel ;
   sprite->physic.smax = smax;
   sprite->physic.jumpPower = jumpPower;
-  sprite->currentPicture = 0;
+  sprite->currentPicture = 0; 
   sprite->currentAnimation = 0;
   sprite->size = sprite_size;
   sprite->nb_sprite = nb_sprite;
   sprite->size = sprite_size;
   sprite->count = 0;
-  sprite->sprite_number = sprite_number;  /* Number in the array               */
-  sprite->max_number = max_number;        /* Number max of sprite in the array */
+  sprite->sprite_number = sprite_number;  /* Number in the array              */
+  sprite->max_number = max_number;        /* Number max of sprite in the array*/
   sprite->life = life;
   sprite->picture.x = 0;
   sprite->picture.y = 0;
@@ -83,6 +81,7 @@ void spriteInit(sprite_t *sprite, sprite_type type,
   sprite->body.w = STICKMAN_WIDTH;
   sprite->physic.allowedToJump = true;
   sprite->physic.timerOfJump = 0;
+  sprite->physic.allowedToHit = true;
 
 }
 
@@ -94,7 +93,7 @@ void init_hero1(sprite_t *h1, SDL_Surface *sprite_picture)
 	      ACCEL_H1 , S_MAX_H1, JPOWER_H1,
 	      NB_SPRITE_H1, SPRITE_SIZE_H1,
 	      1, 1,          /*if we talk about a tab of sprite*/
-	      LIFE_H1, STICKMAN_HEIGHT, STICKMAN_WIDTH,
+	      LIFE_H1,
 	      sprite_picture);
 
 }
@@ -103,82 +102,94 @@ void initEnnemy(sprite_t *charac, int numberEnnemy, SDL_Surface *ennemy_picture)
 {
   spriteInit(charac, ennemy_t, ACCEL_ENNEMY, S_MAX_ENNEMY, JPOWER_ENNEMY,
 	     NB_SPRITE_ENNEMY, SPRITE_SIZE_H1, numberEnnemy, MAX_ENNEMIES, 
-	     LIFE_ENNEMY, STICKMAN_HEIGHT, STICKMAN_WIDTH, ennemy_picture);
+	     LIFE_ENNEMY, ennemy_picture);
 }
 
 void init_beam(sprite_t *beam, int beam_nb, SDL_Surface *sprite_picture)
 {
-  printf("rentré dans init beam\n");
+
   int i;
   for(i=0; i<beam_nb; i++){
     //  printf("i = %d \n", i);
     spriteInit(&beam[i], beam_t, BASE_ACCEL, BASE_S_MAX, BASE_JPOWER, 1, 
-	     8, beam_nb, 1, BASE_LIFE, 8, 8, sprite_picture);
-    updateBody(&beam[i]);
+	       8, i, beam_nb, BASE_LIFE, sprite_picture);
   }
-  printf("init beam work\n");
+
 }
 
+void updateBeam(sprite_t *beam)
+{
+  int i = 0;
+  int beam_nb = beam[i].max_number;
+
+
+  for(i=0; i<beam_nb; i++){
+    // printf("i = %d\n", i);
+    beam[i].body.x = beam[i].position.x;
+    beam[i].body.y = beam[i].position.y;
+    beam[i].body.w = 8;
+    beam[i].body.h = 8;
+    //   beam[i].physic.x = beam[i].position.x;
+    // beam[i].physic.y = beam[i].position.y;
+
+  }
+
+}
 ///////////////////////////////////////////////////////////
 
-/* display the map                              */
+
+/* read the map                              */
 /* She is readed one full time to know the base *
  * position of all character                    */
-void displayMap (char** map, sprite_t *hero1, bool *readed,
+void readMap (char** map, sprite_t *hero1, bool *readed,
 		 SDL_Surface *screen, SDL_Surface *background,
 		 sprite_t *beam, sprite_t *ennemies, int *nbEnnemy,
-		 SDL_Surface *ennemy_picture)
+	      SDL_Surface *ennemy_picture)
 {
-  int currBeam = 0;
-  int currEnnemy = 0;
-  int i,j;
-  SDL_BlitSurface(background, NULL, screen, NULL);
-  for (i = 0; i < ROOM_HEIGHT; i++){
-    for (j = 0; j < ROOM_WIDTH; j++){
+
+  if(!*readed){
+    int currBeam = 0;
+    int currEnnemy = 0;
+    int x = 0;
+    int y = 0;
+    int i,j;
+    for (i = 0; i < ROOM_HEIGHT; i++){ 
+      for (j = 0; j < ROOM_WIDTH; j++){
       
-      // printf("%c", map[i][j]);
-      //printf("i : %d, j : %d \n",i,j);
-      
-      switch (map[i][j]) {
-      case '1':
-	if(!*readed){
-	  beam[currBeam].position.x = j*8;
-	  beam[currBeam].position.y = i*8;
-	}
-  	SDL_BlitSurface(beam->spritePicture, NULL, screen, &beam[currBeam].position);
-	currBeam += 1;
-	break;
-      case '3':
-	if(!*readed){
+	switch (map[i][j]) {
+	case '1':
+	  x = j*8;
+	  y = i*8;
+	  beam[currBeam].physic.x = x;
+	  beam[currBeam].physic.y = y;
+	  beam[currBeam].position.x = x;
+	  beam[currBeam].position.y = y;
+	  updateBeam(beam);
+	  currBeam += 1;
+	  break;
+	case '3':
 	  hero1->physic.x = j*8;
 	  hero1->physic.y = i*8;
-	}
-	break;
-      case '7':
-	if (!*readed){
+	  hero1->position.x = j*8;
+	  hero1->position.y = i*8;
+	  copySDL_Rect(&hero1->position, &hero1->position_aft);
+	  break;
+	case '7':
 	  initEnnemy(&ennemies[currEnnemy], currEnnemy, ennemy_picture);
 	  ennemies[currEnnemy].physic.x = j*8;
 	  ennemies[currEnnemy].physic.y = i*8;
-	  printf("7 readed\n");
-	  printf("x = %f  ||  y = %f\n",ennemies[currEnnemy].physic.x,ennemies[currEnnemy].physic.y);
 	  currEnnemy += 1;
-	  printf("currEnnemy = %d\n",currEnnemy);
 	  *nbEnnemy += 1;
-	  printf("nbEnnemy = %d\n",*nbEnnemy);
+	  break;
+	default:
+	  break;
 	}
-	break;
-      default:
-	break;
       }
     }
+    *readed = true;
   }
-  for (i=0; i<=*nbEnnemy; i++){
-    if (!*readed){
-      printf("ennemy %d || x = %f || y = %f\n",i,ennemies[i].physic.x,ennemies[i].physic.y);
-      printf("nbEnnemy = %d\n",*nbEnnemy);
-    }
-  }
-  *readed = true;
+
+
 }
 
 
@@ -231,12 +242,13 @@ void free_Map (char** map, int size_y)
     free(map);                //free the tab
     map = NULL;               //security
   }
+/*****************************************************************/
 
 /*Read the entry file and put all char in a tab[][](map) */
-void readMap (char* nameMap, char** map)
+void readTxt (char* nameMap, char** map)
 {
   char C; /*the actual char red*/
-  int countColomn = 0, countLane = 0;
+  int countColomn = 0, countLane = -1;  //countlane = -1 because it will increase to zero at the beginnig of the reading file process
   FILE* txt = fopen(nameMap, "r");
 
   
@@ -244,26 +256,66 @@ void readMap (char* nameMap, char** map)
   do 
   {
     C = fgetc(txt);  /* storing the actual data*/
+    if (C == '/'){
+      countColomn = 0;
+      countLane++;
+      C = fgetc(txt);
+    }
+  
+    
+      
     map[countLane][countColomn] = C;
     countColomn++;
     if (countColomn >= ROOM_WIDTH){
+      while (C != '/' && C != EOF){
+	C = fgetc(txt);
+	//printf("ça boucle");
+      }
       countColomn = 0;
       countLane++;
     }
+    //printf("ça boucle");
   } while (C != EOF && countLane < ROOM_HEIGHT);
   fclose(txt); 
  
-}	
+} 
+
+
+
 
 /*Warning: this function is not really effective*/
 /*We need a new one*/
-void drawSprite(sprite_t *sprite, SDL_Surface *screen)
+void drawSprite(sprite_t sprite, SDL_Surface *screen)
 {
-  SDL_BlitSurface(sprite->spritePicture,
-		  &sprite->picture, screen,
-		  &sprite->position);
+  SDL_BlitSurface(sprite.spritePicture,
+		  &sprite.picture, screen,
+		  &sprite.position);
 
 }
+
+void displayAll(SDL_Surface *background, SDL_Surface *screen,
+		sprite_t *beam, int beam_nb,
+		sprite_t h1,
+		sprite_t *ennemies, int nbEnnemies)
+{
+  int i = 0;
+  SDL_BlitSurface(background, NULL, screen, NULL);
+
+
+  for(i = 0; i < beam_nb; i++){
+    SDL_BlitSurface(beam[i].spritePicture, NULL, screen,
+		    &beam[i].position);
+  }
+  
+  drawSprite(h1, screen);
+
+  
+  for(i=0 ; i < nbEnnemies ; i++){
+    drawSprite(ennemies[i], screen);
+  }
+  
+}
+
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -279,44 +331,81 @@ void drawSprite(sprite_t *sprite, SDL_Surface *screen)
 /*  picture is the current sprite used,                *
  *  nbSprite is the number of sprites in the animation */
 
-void animSprite ( SDL_Rect * picture, int nbSprite, int spriteSize)
+void animSprite (sprite_t *character)
 {
-  picture->x += spriteSize;
-  if (picture->x >= nbSprite * spriteSize){
-    picture->x = 0;
+  character->picture.x += character->size; 
+  //printf("animation\n");
+  if (character->picture.x >= character->nb_sprite * character->size){
+    character->picture.x = 0;
+    if(character->physic.isAttacking){
+      endAttack(character);
+    }
   }
 }
+/*JAI CHANGE CA*/
 void directionChar (sprite_t *character)
 {
-  if (character->physic.sx > 0 && character->physic.sx < RUN_STEP){
-    // printf("standRight\n");
-    character->currentPicture = SPRITE_STAND_RIGHT;
-    character->nb_sprite = 1;
-  }
-  if (character->physic.sx < 0 && character->physic.sx > -RUN_STEP){
-    //  printf("standLeft\n");
-    character->currentPicture = SPRITE_STAND_LEFT;
-    character->nb_sprite = 1;
-  }
-  if (character->physic.sx > 0 && character->physic.sx > RUN_STEP){
-    // printf("runRight\n");
-    character->currentPicture = SPRITE_RUN_RIGHT;
-    character->nb_sprite = 4;
-  }
-  if (character->physic.sx < 0 && character->physic.sx < -RUN_STEP){
-    //printf("runLeft \n");
-    character->currentPicture = SPRITE_RUN_LEFT;
-    character->nb_sprite = 4;
+  if(!character->physic.isAttacking){
+    if (character->physic.sx > 0 && character->physic.sx < RUN_STEP){
+      // printf("standRight\n");
+      character->currentAnimation = SPRITE_STAND_RIGHT;
+      character->picture.x = 0;
+      character->nb_sprite = 4;
+      if(character->physic.sy > JUMP_STEP || character->physic.sy < -JUMP_STEP){
+	character->currentAnimation = SPRITE_JUMP_RIGHT;
+	character->nb_sprite = 4;
+      } 
+    }
+    if(character->currentAnimation != SPRITE_STAND_LEFT){
+      if (character->physic.sx < 0 && character->physic.sx > -RUN_STEP){
+	//  printf("standLeft\n");
+	character->currentAnimation = SPRITE_STAND_LEFT;
+	character->picture.x = 0;
+	character->nb_sprite = 4;
+	if(character->physic.sy > JUMP_STEP || character->physic.sy < -JUMP_STEP){
+	  character->currentAnimation = SPRITE_JUMP_LEFT;
+	  character->nb_sprite = 4;
+	} 
+      }
+    }
+    if(character->currentAnimation != SPRITE_RUN_RIGHT){
+      if (character->physic.sx > 0 && character->physic.sx > RUN_STEP){
+	// printf("runRight\n");
+	character->currentAnimation = SPRITE_RUN_RIGHT;
+	character->picture.x = 0;
+	character->nb_sprite = 8;
+	if(character->physic.sy > JUMP_STEP || character->physic.sy < -JUMP_STEP){
+	  character->currentAnimation = SPRITE_JUMP_RIGHT;
+	  character->nb_sprite = 4;
+	}
+      }
+    }
+    if(character->currentAnimation != SPRITE_RUN_LEFT){
+      if (character->physic.sx < 0 && character->physic.sx < -RUN_STEP){
+	//printf("runLeft \n");
+	character->currentAnimation = SPRITE_RUN_LEFT;
+	character->picture.x = 0;
+	character->nb_sprite = 8;
+	if(character->physic.sy > JUMP_STEP || character->physic.sy < -JUMP_STEP){
+	  character->currentAnimation = SPRITE_JUMP_LEFT;
+	  character->nb_sprite = 4;
+	} 
+      }
+    }
   }
 }
 
 void animChar (sprite_t *character)
 {
-
+  
   directionChar(character);
-  character->picture.y = character->size * character->currentPicture;
-
-  animSprite(&character->picture, character->nb_sprite, character->size);
+  character->picture.y = character->size * character->currentAnimation;
+  character->count += 1;
+  if (character->count >= 100){
+    character->count = 0;
+    animSprite(character);
+  }
+ 
   /*
   printf("character->nb_sprite : %d \n", character->nb_sprite);
   printf("character->size : %d \n", character->size);
@@ -330,19 +419,26 @@ void animChar (sprite_t *character)
   
 }
 
+void endAttack(sprite_t *character)
+{     
+  if(character->currentAnimation == SPRITE_ATTACK_LEFT){
+    character->currentAnimation = SPRITE_STAND_LEFT;
+  }
+  else {
+    character->currentAnimation = SPRITE_ATTACK_RIGHT;
+  }
+  character->physic.isAttacking = false;
+}
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 /*physics.c*/
 
 /*This file will rule all the movements, jumps, and landings*/
 
-/*#define GRAVITY -9.8*/
 
 /*Brake if not in the air*/
 void brake(sprite_t *sprite)
 {
-
-  if(!sprite->physic.inTheAir){
     /*if the sprite go the left*/
     if(sprite->physic.sx < 0.0){
       sprite->physic.sx /= FROTTEMENT;
@@ -350,7 +446,7 @@ void brake(sprite_t *sprite)
     /*else if the sprite go to the right*/
     if(sprite->physic.sx > 0.0){
       sprite->physic.sx /= FROTTEMENT;
-    }
+    
   }
   
 }
@@ -361,10 +457,9 @@ void move (sprite_t *sprite)
   
   sprite -> physic.x += sprite -> physic.sx;
   sprite -> physic.y += sprite -> physic.sy;
-  sprite -> position.x = (int) sprite -> physic.x;
-  sprite -> position.y = (int) sprite -> physic.y;
-  // printf("sx: %f, sy: %f",sprite -> physic.sx, sprite -> physic.sy );
-  // printf("x: %d, y: %d \n", sprite->position.x, sprite->position.y);
+  sprite -> position_aft.x = (int) sprite -> physic.x;
+  sprite -> position_aft.y = (int) sprite -> physic.y;
+
 }
 
 
@@ -387,6 +482,32 @@ void run (sprite_t *character, double direction)
 
 
 
+/*Changement ici*/
+/**/
+void copySDL_Rect(SDL_Rect *copy, SDL_Rect *past)
+
+{
+  past->x = copy->x;
+  past->y = copy->y;
+  past->w = copy->w;
+  past->h = copy->h;
+
+} 
+
+
+void copySDL_RectToDouble(SDL_Rect *copy, double *x, double *y)
+{
+
+ *x = (double)copy->x;
+ *y = (double)copy->y;
+
+
+}
+
+/**/
+/*Fin du changement*/
+
+
 void jump(sprite_t *character)
 {
   if(!character->physic.inTheAir && character->physic.allowedToJump){
@@ -398,43 +519,214 @@ void jump(sprite_t *character)
 void fall(sprite_t *sprite)
 {
   if(sprite->physic.inTheAir){
-     sprite->physic.sy -= GRAVITY * sprite->physic.timerOfJump;
-     sprite->physic.timerOfJump += 0.001;
+    if(sprite->physic.sy < sprite->physic.smax){
+      sprite->physic.sy -= GRAVITY * sprite->physic.timerOfJump;
+      sprite->physic.timerOfJump += 0.001;
+    }
   }
   if(!sprite->physic.inTheAir){
     sprite->physic.sy = 0;
   }
   
 }
+
+
+
+
+void hit(sprite_t *character)
+{
+  //printf("allowed to hit = %d\n", character->physic.allowedToHit);
+  if (character->physic.allowedToHit){
+    character->physic.isAttacking = true;
+    character->nb_sprite = 6;
+    switch (character->currentAnimation){
+      case 4:
+      case 2:
+      case 0:
+	character->currentAnimation = SPRITE_ATTACK_RIGHT;
+	break;
+      case 5:
+      case 3:
+      case 1:
+	character->currentAnimation = SPRITE_ATTACK_LEFT;
+	break;
+      default:
+	break;
+    }
+  }
+}
+
+
+void placeHitPoint (sprite_t *character)
+{
+  int xGap, yGap;
+  int position = character->picture.x;
+  if (!character->physic.isAttacking){
+    character->physic.attackX = -1;  /*place the point outta the screen*/
+    character->physic.attackY = -1;
+  }
+  else {
+    if (character->currentAnimation == SPRITE_ATTACK_LEFT){
+      switch (position){ /*look where is the sprite on the image*/
+	case 0:   /*first one*/
+	  xGap = 20;
+	  yGap = 17;
+	  break;
+	case 64:  /*2nd*/
+	  xGap = 15;
+	  yGap = 16;
+	  break;
+	case 128: /*3rd*/
+	  xGap = 4;
+	  yGap = 21;
+	  break;
+	case 192: /*4th*/
+	  xGap = 5;
+	  yGap = 21;
+	  break;
+	case 256:  /*5th*/
+	  xGap = 4; 
+	  yGap = 20;
+	  break;
+	case 320:  /*6th*/
+	  xGap = 13;
+	  yGap = 29;
+	  break;
+	default:
+	  break;
+      }
+    }
+    if (character->currentAnimation == SPRITE_ATTACK_RIGHT){
+      switch (position){ /*look where is the sprite on the image*/
+	case 0:   /*first one*/
+	  xGap = 44;
+	  yGap = 17;
+	  break;
+	case 64:  /*2nd*/
+	  xGap = 49;
+	  yGap = 16;
+	  break;
+	case 128: /*3rd*/
+	  xGap = 59;
+	  yGap = 21;
+	  break;
+	case 192: /*4th*/
+	  xGap = 59;
+	  yGap = 21;
+	  break;
+	case 256:  /*5th*/
+	  xGap = 60; 
+	  yGap = 20;
+	  break;
+	case 320:  /*6th*/
+	  xGap = 51;
+	  yGap = 30;
+	  break;
+	default:
+	  break;
+      }
+    }
+    character->physic.attackX = character->position.x + xGap;
+    character->physic.attackY = character->position.y + yGap;
+  }
+}
+	
 //////////////////////////////////////////////////////////
+/*ALL HERO1 function*/
+void h1Physics(sprite_t *h1, sprite_t *beam, int beam_nb)
+{
+
+
+  move(h1);
+  updateBody(h1);
+
+  brake(h1);
+  fall(h1);
+
+  animChar(h1);
+  
+  placeHitPoint(h1);
+  collision(beam, beam_nb, h1);
+}
 
 
 //////////////////////////////////////////////////////////
 /*ALL ENNEMIES FUNCTIONS*/
 
-void ennemyPhysics(sprite_t *ennemies, SDL_Surface *screen, int nbEnnemies, sprite_t h1)
+void stuntAction(sprite_t *sprite)
 {
-  double distx, disty;
-  int i;
-  for (i = 0; i <= nbEnnemies; i++){
-    //find the distance sepearating the ennemy and the hero
-    distx = (h1.physic.x - ennemies[i].physic.x);
-    //disty = (h1.physic.y - ennemies[i].physic.y);
-    //Hero on the right 
+  sprite->physic.stunt_timer -= 1;
+  if(sprite->physic.stunt_timer <= 0){
+    sprite->physic.stunt = false;
+  }
+
+}
+
+void followIA(sprite_t *sprite, sprite_t *h1)
+{
+  int distx;
+  
+  //find the distance separating the ennemy and the hero
+  distx = (h1->physic.x - sprite->physic.x);
+
+
+  if (!sprite->physic.stunt){
     if (distx >= HIT_RANGE){
-      run(&ennemies[i], TO_THE_RIGHT); //he goes to the right
+      run(sprite, TO_THE_RIGHT); //he goes to the right
     }
     if (distx <= -HIT_RANGE){
-      run(&ennemies[i], TO_THE_LEFT);
+      run(sprite, TO_THE_LEFT);
     }
-    hyperespace(&ennemies[i]); //c'est juste pour pas me prendre la tete que j'ajoute ça
-    move(&ennemies[i]);
-    brake(&ennemies[i]);
-    drawSprite(&ennemies[i], screen);
-    /*printf("position.x = %d  ||  position.y = %d\n",ennemies[i].position.x,ennemies[i].position.y);
-    printf("x = %f  ||  y = %f\n",ennemies[i].physic.x,ennemies[i].physic.y);*/
   }
 }
+
+/*Ici le bully c'est l'attaquant et victim l"attaqué*/
+void hitAction(sprite_t *bully, sprite_t *victim)
+{
+
+  if(pointInTheBox(bully->physic.attackX, bully->physic.attackY, victim->body)
+     && !victim->physic.stunt){
+
+    if(bully->currentAnimation == SPRITE_ATTACK_LEFT){
+      victim->physic.sx -= HIT_RETREAT;
+    }
+    else{ //SPRITE_ATTACK_RIGHT
+      victim->physic.sx += HIT_RETREAT;
+    }
+    victim->physic.stunt = true;
+    victim->physic.stunt_timer = STUNT_TIMER;
+  }
+
+}
+
+void ennemyPhysics(sprite_t *ennemies, int nbEnnemies, sprite_t *beam, int beam_nb, sprite_t *h1)
+{
+
+  int i;
+  for (i = 0; i <= nbEnnemies; i++){
+    stuntAction(&ennemies[i]);
+    followIA(&ennemies[i], h1);
+    
+    move(&ennemies[i]);
+    updateBody(&ennemies[i]);
+    
+    brake(&ennemies[i]);
+    fall(&ennemies[i]);
+    
+    animChar(&ennemies[i]);
+    hitAction(h1, &ennemies[i]);
+
+    collision(beam, beam_nb, &ennemies[i]);
+
+    
+  }
+}
+
+
+
+
+
+
 
 //////////////////////////////////////////////////////////
 /*ALL COLLISION FUNCTIONS*/
@@ -442,8 +734,8 @@ void ennemyPhysics(sprite_t *ennemies, SDL_Surface *screen, int nbEnnemies, spri
 /*here because body is used for collisions*/
 void updateBody(sprite_t *stickman)
 {
-  stickman->body.x = stickman->position.x + STICKMAN_X_GAP;
-  stickman->body.y = stickman->position.y + STICKMAN_Y_GAP;
+  stickman->body.x = stickman->position_aft.x + STICKMAN_X_GAP;
+  stickman->body.y = stickman->position_aft.y + STICKMAN_Y_GAP;
 }
 
 /*calculate the square of the distance between 2 points*/
@@ -453,40 +745,94 @@ int dist(int x1, int y1, int x2, int y2)
   dist = ((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1));
   return dist;
 }
-/*check collide & place the sprite2 in the right place*/
-void collision(sprite_t *sprite1, sprite_t *sprite2)
+
+
+
+/********************************************************************************/
+
+
+/*General function, if we need to test more thing than beam we put it here *
+ * (like a coll sprite/sprite instead of beam/sprite)                      */
+void collision(sprite_t *beam, int beam_nb, sprite_t *sprite)
+{
+  bool floor = false;
+  bool ceiling = false;
+  bool leftWall = false;;
+  bool rightWall = false;
+  int i;
+
+     for (i=0; i<beam_nb; i++){
+       collisionBeam(&beam[i], sprite,
+		     &floor, &ceiling,
+		     &leftWall, &rightWall);
+      }
+ 
+      
+}
+
+
+
+
+/*check collide & place the sprite in the right place*/
+void collisionBeam(sprite_t *beam, sprite_t *sprite,
+		   bool *floor, bool *ceiling,
+		   bool *leftWall, bool *rightWall)
 {
 
-  int dir;
+  int px, py;
 
-  if(collBetweenBox(sprite1->body, sprite2->body)){
-   dir = PosCompared(sprite1->body, sprite2->body);
-   switch (dir) {
-   case COLL_LEFT:
-     //printf("Switch collision Left \n");
-     sprite2->physic.x = sprite1->physic.x + (double)(sprite2->body.w + 1);  //place the sprite2 on the right of sprite1 
-     break;
-   case COLL_RIGHT:
-     //printf("Switch collision right \n");
-     sprite2->physic.x = sprite1->physic.x - (double)(sprite1->body.w - 1); //place on the left
-     break;
-   case COLL_UP:
-     printf("Switch collision up \n");
-     sprite2->physic.y = sprite1->physic.y - (double)(sprite2->body.h - 1); //above
-     sprite2->physic.inTheAir = false;
-     sprite2->physic.allowedToJump = true;
-     
-     break;
-   case COLL_DOWN:
-     //printf("Swtich collision down \n");
-     sprite2->physic.y = sprite1->physic.y + (double)(sprite1->body.h + 1); //under
-   default:
-     break;
-   }
-  printf("coll");
+  
+  if(collBetweenBox(beam->body, sprite->body)){
+    posCompared(beam->body, sprite->body, &px, &py);
+
+    
+    if(py == COLL_UP && px == 0){
+      *floor = true;
+      sprite->physic.inTheAir = false;
+      sprite->physic.allowedToJump = true;
+      sprite->physic.timerOfJump = 0;
+      
+    }
+    else if(py == COLL_DOWN && !*floor && !*ceiling){
+      *ceiling = true;
+      sprite->physic.inTheAir = true;
+      sprite->position.y = beam->position.y+1;
+      fall(sprite);
+    }
+    else if(px == COLL_LEFT && !*leftWall){
+      *leftWall = true;
+      //   sprite->position.x = beam->position.x+1;
+      //  brake(sprite);   
+    }
+    else if(px == COLL_RIGHT && !*rightWall){
+      *rightWall = true;
+      // sprite->position.x = beam->position.x-1;
+      // brake(sprite);
+    }
+    copySDL_Rect(&sprite->position, &sprite->position_aft);
+  }
+  else if(!*floor){
+    sprite->physic.inTheAir = true;
   }
 
+
+
+
+  // hyperespace(sprite);
+  copySDL_Rect(&sprite->position_aft, &sprite->position);
+  updateBody(sprite);
 }
+ 
+
+
+
+
+
+
+
+
+
+/*********************************************************************************/
 
 /*the point (x,y) it is in the box ?? true if yes*/
 bool pointInTheBox(int x, int y, SDL_Rect box)
@@ -505,21 +851,8 @@ bool pointInTheBox(int x, int y, SDL_Rect box)
 
 }
 
-/*retourne vrai si la box1 rentre en col avec box2*/
-/*bool collBetweenBox(SDL_Rect box1, SDL_Rect box2)
-{
-  bool res;
-   if( (box2.x >= box1.x + box1.w)      // trop à droite
-	&& (box2.x + box2.w >= box1.x) // trop à gauche
-	&& (box2.y >= box1.y + box1.h) // trop en bas
-      && (box2.y + box2.h <= box1.y) ) {  // trop en haut
-          res = false; 
-   }
-   else {
-          res = true; 
-   }
-   return res;
-}*/
+
+/*Fonction qui retourne le minimum de deux entiers*/
 int minimum (int a, int b)
 {
   if (a < b ) {
@@ -531,7 +864,7 @@ int minimum (int a, int b)
 }
 
 
-//Fonction qui retourne le maximum de deux nombres 
+//Fonction qui retourne le maximum de deux entiers 
 int maximum (int a, int b)
 {
   if (a > b) {
@@ -559,79 +892,374 @@ bool collBetweenBox(SDL_Rect box1, SDL_Rect box2)
   return false;
 }
 
-/* retourne un int correspondant la position  *
- * de la box2 par rapport a celle de la box1 *
- * Donc on renvoie la pos de box1             */
-int PosCompared (SDL_Rect box1, SDL_Rect box2)
+
+/* retourne un int correspondant la position   *
+ * de la box2 par rapport a celle de la box1   *
+ * Donc on renvoie la pos de box1              *
+ * Px : Position in x, Py : Position in y      */
+void posCompared (SDL_Rect box1, SDL_Rect box2, int *px, int *py)
 {
-  int res = 0;
-  int distUp, distDown, distLeft, distRight;  //squares of the lenghts of the rectangle made by the collision
-  if(pointInTheBox(box1.x, box1.y, box2)){ //haut gauche
-    if(pointInTheBox(box1.x, box1.y + box1.h, box2)){ //bas gauche
-      //printf("Collision pts : HG et BG (a G ) \n");
-      res = COLL_LEFT;
-    }
-    else if(pointInTheBox(box1.x + box1.w, box1.y, box2)){ //haut droite
-      //printf("Collision pts : HG et HD (en H ) \n");
-      res = COLL_UP;
+  int x1 = box1.x;
+  int y1 = box1.y;
+  int xw1 = box1.x + box1.w;
+  int yh1 = box1.y + box1.h;
+  //  int midx1 = x1 + (box1.w)/2;
+   int midy1 = y1 + (box1.h)/2;
+  
+  int x2 = box2.x;
+  int y2 = box2.y;
+  // int xw2 = box2.x + box2.w;
+  // int yh2 = box2.y + box2.h;
+  int midx2 = x2 + (box2.w)/2;
+  int midy2 = y2 + (box2.h)/2;
+
+  //si x1<midx2<xw1 
+  if(x1 < midx2 && midx2 < xw1){
+    *px = 0; //mean the mid is in the intervall
+  }
+  else if(x1 > midx2){
+    *px = COLL_LEFT;
+  }
+  else {    //xw1 < midx2
+    *px = COLL_RIGHT;
+  }
+  
+  if(y1 < midy2 && midy2 < yh1){
+    if(midy1 < midy2){
+      *py = COLL_DOWN;
     }
     else{
-      //printf("Collision pts : HG seul \n");
-      distUp = dist(box1.x, box1.y, box2.x + box2.w, box1.x);
-      distLeft = dist(box1.x, box1.y, box1.x, box2.y + box2.h);
-      if (distLeft >= distUp){
-	res = COLL_LEFT; /*box2 on the left of box1*/
-      }
-      else {
-	res = COLL_UP;  /*box2 above box1*/
-      }
+      *py = COLL_UP;
     }
   }
-  if(pointInTheBox(box1.x + box1.w, box1.y, box2)){ //bas gauche
-    if(pointInTheBox(box1.x + box1.w, box1.y + box1.h, box2)){ //bas droite
-      //printf("Collision pts : BG + BD ( en B ) \n");
-      res = COLL_DOWN;
-    }
-    else{
-      //printf("Collision pts :  BG seul \n");
-      distLeft = dist(box1.x, box1.y + box1.h, box1.x, box2.y);
-      distDown = dist(box1.x, box1.y + box1.h, box2.x + box2.w, box1.y + box1.h);
-      if(distLeft >= distDown){
-	res = COLL_LEFT;  /*box2 on the left of box1*/
-      }
-      else {
-	res = COLL_DOWN; /*box2 under box1*/
-      }
-    }
+  else if(y1 > midy2){
+    *py = COLL_UP;
   }
-  if(pointInTheBox(box1.x, box1.y + box1.h, box2)){ //haut droite
-    if(pointInTheBox(box1.x + box1.w, box1.y + box1.h, box2)){ //bas droite
-      //printf("Collision pts : HD + BD ( a D ) \n");
-      res = COLL_RIGHT;
-    }
-    else{
-      //printf("Collision pts : HD \n");
-      distUp = dist(box1.x + box1.w, box1.y, box2.x, box1.y);
-      distRight = dist(box1.x + box1.h, box1.y, box1.x + box1.w, box2.y + box2.h);
-      if (distRight >= distUp){
-	res = COLL_RIGHT;
-      }
-      else {
-	res = COLL_UP;
-      }
-    }
+  else{
+    *py = COLL_DOWN;
   }
-  if(pointInTheBox(box1.x + box1.w, box1.y + box1.h, box2)){ //bas droite
-    //printf("Collision pts : BD \n");
-    distDown = dist(box1.x, box1.y, box2.x + box2.w, box1.y);
-    distRight = dist(box1.x, box1.y, box1.x, box2.y + box2.h);
-    if (distRight >= distDown){
-      res = COLL_RIGHT;
-    }
-    else {
-      res = COLL_DOWN;
-    }
-  }
-  //printf("res = %d\n", res);
-  return res;
+
 }
+
+
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+
+
+/*test.c*/
+void testAllProcedure(SDL_Surface *screen)
+{
+  // testPointInTheBox();
+  // testCollBetweenBox();
+  testPosCompared(screen);
+}
+/*Test : pointInTheBox(int x, int y, SDL_Rect Box)*/
+void testPointInTheBox()
+{
+  SDL_Rect box;
+  int x;
+  int y;
+  box.x = 10;
+  box.y = 10;
+  box.w = 5;
+  box.h = 5;
+  printf("Testing pointInTheBox with a box like : \n");
+  printf("box.x = %d, box.y = %d, box.w = %d, box.h = %d  \n", box.x, box.y, box.w, box.h);
+
+  x = 0;
+  y = 0;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+
+  /*Test de la diagonale*/
+  x = 9;
+  y = 9;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  x = 10;
+  y = 10;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  x = 11;
+  y = 11;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  x = 12;
+  y = 12;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  x = 13;
+  y = 13;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  x = 14;
+  y = 14;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  x = 15;
+  y = 15;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  x = 16;
+  y = 16;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+
+  /*Test des droites horizontale  et verticales*/
+  x = 10;
+  y = 11;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  x = 10;
+  y = 14;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  x = 11;
+  y = 10;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  x = 13;
+  y = 10;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  /*Test de cas particuliers*/
+  x = 12;
+  y = 13;
+  if(pointInTheBox(x, y, box)){
+    printf("x = %d, y = %d is in the box \n",x , y);
+  }
+  
+  printf("\n");
+
+}
+
+
+/*test : CollBetweenBox(SDL_Rect box1, SDL_Rect box2)*/
+void testCollBetweenBox()
+{
+  printf("testCollBetweenBox : \n");
+  SDL_Rect box1, box2;
+
+  box1.x = 0;
+  box1.y = 0;
+  box1.h = 5;
+  box1.w = 5;
+
+  box2.x = 0;
+  box2.y = 0;
+  box2.h = 5;
+  box2.w = 5;
+  if(collBetweenBox(box1, box2)){
+    printf("Test think there is collision beetwen these : \n");
+    printf("Box1 : x: %d; y: %d; w: %d; h: %d \n",box1.x, box1.y, box1.h, box1.w);
+    printf("Box2 : x: %d; y: %d; w: %d; h: %d \n",box2.x, box2.y, box2.h, box2.w);
+    printf("\n");
+  }
+
+  box1.x = 0;
+  box1.y = 0;
+  box1.h = 5;
+  box1.w = 5;
+
+  box2.x = 2;
+  box2.y = 2;
+  box2.h = 5;
+  box2.w = 5;
+  if(collBetweenBox(box1, box2)){
+    printf("Test think there is collision beetwen these : \n");
+    printf("Box1 : x: %d; y: %d; w: %d; h: %d \n",box1.x, box1.y, box1.h, box1.w);
+    printf("Box2 : x: %d; y: %d; w: %d; h: %d \n",box2.x, box2.y, box2.h, box2.w);
+    printf("\n");
+  }
+  
+  box1.x = 0;
+  box1.y = 0;
+  box1.h = 5;
+  box1.w = 5;
+
+  box2.x = 1;
+  box2.y = 1;
+  box2.h = 2;
+  box2.w = 5;
+  if(collBetweenBox(box1, box2)){
+    printf("Test think there is collision beetwen these : \n");
+    printf("Box1 : x: %d; y: %d; w: %d; h: %d \n",box1.x, box1.y, box1.h, box1.w);
+    printf("Box2 : x: %d; y: %d; w: %d; h: %d \n",box2.x, box2.y, box2.h, box2.w);
+    printf("\n");
+  }
+
+  
+  box1.x = 0;
+  box1.y = 0;
+  box1.h = 5;
+  box1.w = 5;
+
+  box2.x = 10;
+  box2.y = 10;
+  box2.h = 5;
+  box2.w = 5;
+  if(collBetweenBox(box1, box2)){
+    printf("Test think there is collision beetwen these : \n");
+    printf("Box1 : x: %d; y: %d; w: %d; h: %d \n",box1.x, box1.y, box1.h, box1.w);
+    printf("Box2 : x: %d; y: %d; w: %d; h: %d \n",box2.x, box2.y, box2.h, box2.w);
+    printf("\n");
+  }
+  
+}
+
+
+/*Event gestion : THIS IS FOR THE SCREEN TESTING*/
+void handleEventTest (SDL_Event event, int *quit,
+		      int *endTest, SDL_Rect *box2)
+{
+
+  switch (event.type) {
+    /*Close button pressed*/
+  case SDL_QUIT:
+    *quit=1;
+    break;
+    
+    
+    /*handle keyboards*/
+  case SDL_KEYDOWN:
+    switch (event.key.keysym.sym){
+    case SDLK_ESCAPE:
+      *quit = 1;
+      break;
+    case SDLK_q:
+      *endTest = 1;
+      break;
+    case SDLK_RETURN:
+      *endTest = 1;
+      break;
+      break;
+    case SDLK_RIGHT:
+      box2->x +=40;
+      break;
+    case SDLK_LEFT:
+      box2->x -= 40;
+      break;
+    case SDLK_UP:
+      box2->y -= 40;
+      break;
+    case SDLK_DOWN:
+      box2->y += 40;
+      break;
+    default:
+      break;
+    }
+    break;
+       
+  }
+  
+}
+/*specifical function*/
+/*max tab is 20*/
+void createTabBox(SDL_Rect *box)
+{
+  int i;
+
+    for(i=0; i<18; i++){
+      box[i].x = 500+8*i;
+      box[i].y = 250;
+      box[i].h = 8;
+      box[i].w = 8;
+    }
+
+
+}
+
+/*test : int PosCompared (SDL_Rect box1, SDL_Rect box2)*/
+void  testPosCompared(SDL_Surface *screen)
+{
+
+  /*New var test*/
+  
+  int i;
+  /*Create box to see in game*/
+  SDL_Surface  *background_test;
+  SDL_Surface *box1_picture, *box2_picture;
+  SDL_Rect box[20];
+  SDL_Rect box2;
+  SDL_Rect box2_bef;
+  // int px, py;
+  int quit = 0;
+  int endTest = 0;
+  bool init = false;
+
+  background_test = download_sprite_("background.bmp");
+  box1_picture = download_sprite_("littlebox.bmp"); 
+  box2_picture = download_sprite_("box2.bmp");
+
+  /*begin test*/
+  printf("testposCompared : \n");
+  while (!endTest && !quit){
+    if(!init){
+      printf("left = %d \n", COLL_LEFT);
+      printf("right = %d \n",COLL_RIGHT);
+      printf("up = %d \n", COLL_UP);
+      printf("down = %d \n", COLL_DOWN);
+      printf("Start the test : \n");
+
+      createTabBox(box); 
+
+      box2.x = 250;
+      box2.y = 250;
+      box2.h = 64;
+      box2.w = 64;
+
+      init = true;
+    }
+
+    /*nouveau test*/
+    for(i=0;i<18;i++){
+      if(collBetweenBox(box[i], box2)){
+	copySDL_Rect(&box2_bef, &box2);
+      }
+    }
+    if(box2.y == SCREEN_HEIGHT + box2.h){
+      box2.y = SCREEN_HEIGHT + box2.h;
+      }
+  copySDL_Rect(&box2, &box2_bef);
+
+    
+  SDL_Event event;
+    if (SDL_PollEvent(&event)) {
+      handleEventTest (event, &quit, &endTest, &box2);
+    }
+
+    SDL_BlitSurface(background_test, NULL, screen, NULL);
+    
+    for(i=0;i<18;i++){
+    SDL_BlitSurface(box1_picture, NULL, screen, &box[i]);
+    }
+    SDL_BlitSurface(box2_picture, NULL, screen, &box2);
+
+
+    SDL_UpdateRect(screen, 0, 0, 0, 0);
+  }
+  /*Free the SDL_Surface*/
+  SDL_FreeSurface(background_test);
+  SDL_FreeSurface(box1_picture);
+  SDL_FreeSurface(box2_picture);
+
+}
+

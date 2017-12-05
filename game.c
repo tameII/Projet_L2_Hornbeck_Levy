@@ -1,10 +1,10 @@
 /*this is the file which reunites all the functions*/
 /*Brandon Hornbeck*/
-/*Mathieu Levy*/
+/*Mathieu Levy*/ 
 
 #include "print.h"
 
-#define NB_KEY 3
+#define NB_KEY 4
 
 
 //////////////////////////////////
@@ -12,8 +12,7 @@ void wipe_tab(int *tab, int N);
 
  
 /*Event gestion*/
-void handleEvent (SDL_Event event, int *quit,
-		  int *tableEvent);
+
 void applyEvent (sprite_t *h1, int *tableEvent);
 void game ();
 
@@ -33,16 +32,41 @@ void wipe_tab(int *tab, int N)
 /*Initialisation of the main character*/
 /*h1 = heroe1*/
 
-
+void handleEventMenu(SDL_Event event, int *endMenu, int *gameOver)
+{
+  switch (event.type) {
+    /*Close button pressed*/
+  case SDL_QUIT:
+    *endMenu=1;
+    break;
+    /*handle keyboards*/
+  case SDL_KEYDOWN:
+    switch (event.key.keysym.sym){
+    case SDLK_ESCAPE:
+      *endMenu = 1;
+      break;
+    case SDLK_RETURN:
+    case SDLK_SPACE:
+      *gameOver = 0;
+      break;
+    default:
+      break;
+    }
+    break;
+  default:
+    break;
+  }
+}
 
 /*Event gestion*/
-void handleEvent (SDL_Event event, int *quit,
+void handleEvent (SDL_Event event, int *gameOver, int *endMenu,
 		  int *tableEvent)
 {
   switch (event.type) {
     /*Close button pressed*/
   case SDL_QUIT:
-    *quit=1;
+    *gameOver=1;
+    *endMenu = 1;
     break;
     
       
@@ -51,7 +75,7 @@ void handleEvent (SDL_Event event, int *quit,
     switch (event.key.keysym.sym){
     case SDLK_ESCAPE:
     case SDLK_q:
-      *quit = 1;
+      *gameOver = 1;
       break;
     case SDLK_LEFT:
       tableEvent[0] = 1; 
@@ -59,9 +83,11 @@ void handleEvent (SDL_Event event, int *quit,
     case SDLK_RIGHT:
       tableEvent[1] = 1;
       break;
-    case SDLK_SPACE:
     case SDLK_UP:
       tableEvent[2] = 1;
+      break;
+    case SDLK_SPACE:
+      tableEvent[3] = 1;
       break;
     default:
       break;
@@ -75,10 +101,11 @@ void handleEvent (SDL_Event event, int *quit,
     case SDLK_RIGHT:
       tableEvent[1] = 0;
       break;
-    case SDLK_SPACE:
     case SDLK_UP:
       tableEvent[2] = 0;
       break;
+    case SDLK_SPACE:
+      tableEvent[3] = 0;
     default:
       break;
     }
@@ -100,6 +127,16 @@ void applyEvent (sprite_t *h1, int *tableEvent)
     jump(h1);
     h1->physic.allowedToJump = false;
   }
+  if(tableEvent[2] == 0){
+    h1->physic.allowedToJump = true;
+  }
+  if(tableEvent[3] == 1){
+    hit(h1);
+    h1->physic.allowedToHit = false;
+  }
+  if(tableEvent[3] == 0){
+    h1->physic.allowedToHit = true;
+  }
 }
 
 /*Main function*/
@@ -113,14 +150,16 @@ void game ()
   bool readed = false;
   int beam_nb;
   /************************/
-  
+
+  /************************/
+
   char** map = NULL;
   map = crea_Map(ROOM_WIDTH, ROOM_HEIGHT);
-  int quit = 0;
+  int  endMenu = 0, gameOver = 1;
 
   int tableEvent[NB_KEY];
   wipe_tab(tableEvent, NB_KEY);
-  int i;
+
   
   /*initialise SDL*/
   SDL_Init (SDL_INIT_VIDEO);
@@ -140,7 +179,7 @@ void game ()
   
   
   h1_picture = download_sprite_("h1.bmp");
-  ennemy_picture = download_sprite_("ennemy.bmp");
+  ennemy_picture = download_sprite_("ennemy2.bmp");
   set_colorkey_(h1_picture, 255, 0, 255, screen);
   set_colorkey_(ennemy_picture, 255, 0, 255, screen);
   
@@ -148,48 +187,74 @@ void game ()
   
   /*InitSprite*/
   init_hero1(&h1, h1_picture);
-  readMap("test.txt", map);
+  readTxt("level2.txt", map);
   
   beam_nb = countInTheMap(map, '1');
-  // creaTabSprite(beam, beam_nb);
+  printf("beam_nb :%d \n", beam_nb);
+  nbEnnemies = countInTheMap(map, '7');
+  printf("nbEnnemies : %d \n", nbEnnemies);
+
   beam = (sprite_t*)malloc(beam_nb * sizeof(sprite_t));
   init_beam(beam, beam_nb, beam_picture);
 
-    printf("\nLaunch the game : \n");
-  /*Main loop : check event and re-draw the window until the end*/
-  while (!quit){
+  /*Testing procedure....*/
+  // printf("Testing procedure... \n");
+  // testAllProcedure(screen);
 
-    /*Look for an event; possibly update position *
-     * and shape of sprites                       */
+
+  printf("\nLaunch the game : \n");
+  
+
+  while(!endMenu){
+    
     SDL_Event event;
-    if (SDL_PollEvent(&event)) {
-      handleEvent (event, &quit, tableEvent);
-	}
-    applyEvent(&h1, tableEvent);
-    /*Draw the background*/
-    displayMap(map, &h1, &readed, screen, background, beam, ennemies, &nbEnnemies, ennemy_picture);
-
-    move(&h1);
-    brake(&h1);
-    fall(&h1);
-    hyperespace(&h1); //c'est juste pour pas me prendre la tete que j'ajoute ça
-    
-    animChar(&h1);
-    updateBody(&h1);
-    drawSprite(&h1, screen);
-    printf("x = %d, y= %d \n",h1.position.x, h1.position.y);
-    for (i=0; i<beam_nb; i++){
-      collision(&beam[i], &h1);
+    if (SDL_PollEvent(&event)){
+      handleEventMenu(event, &endMenu, &gameOver);
     }
+ 
+    
+    /*Main loop : check event and re-draw the window until the end*/
+    while (!gameOver){
+
+      /*Look for an event; possibly update position *
+       * and shape of sprites                       */
+
+    
+      SDL_Event event;
+      if (SDL_PollEvent(&event)){
+	handleEvent (event, &gameOver, &endMenu, tableEvent);
+      }
+      applyEvent(&h1, tableEvent);
+    
+
+      readMap(map, &h1, &readed, screen, background,
+		 beam, ennemies, &nbEnnemies, ennemy_picture);
+
+      h1Physics(&h1, beam, beam_nb);
       
+      ennemyPhysics(ennemies, nbEnnemies, beam, beam_nb, &h1);
+
+  
+      
+      //  displayAll(background, screen, beam, beam_nb,  ennemies, nbEnnemies);
+     displayAll(background, screen,
+		beam, beam_nb,
+		h1,
+		ennemies, nbEnnemies);
+
+
+      /*update the screen*/
+      SDL_UpdateRect(screen, 0, 0, 0, 0);
+    }
+    /*End of main loop*/
+    /*Display menu : */
+    SDL_BlitSurface(background, NULL, screen, NULL);
+
     
-    ennemyPhysics(ennemies, screen, nbEnnemies, h1);
-    
-    //SDL_BlitSurface(h1_picture, NULL, screen, &h1.position);
-    /*update the screen*/
     SDL_UpdateRect(screen, 0, 0, 0, 0);
   }
-  /*End of main loop*/
+  /*End of menu*/
+
 
   
   /*Freedom !*/
