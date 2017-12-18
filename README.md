@@ -34,3 +34,8 @@ _____________________________________________________________________________
    If there is no ennemy the level is won.  
    If you don't put a hero the hero is automatically placed at the middle  
    Dont fall under the bottom line or you die (this mean disappear from the bottom of the screen)
+
+
+___________________________________________________________________________________
+This game can't work on windows or mac yet.
+If you need to compilate it, use the command "make" in the shell (on the right folder).
