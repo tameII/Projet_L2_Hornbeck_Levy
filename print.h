@@ -85,7 +85,7 @@
 #define TIMER_ATTACK 700
 
 #define SEE_X 400
-#define SEE_Y 300
+#define SEE_Y 150
 #define JUMP_RANGE 25
 
 #define TO_THE_LEFT -1

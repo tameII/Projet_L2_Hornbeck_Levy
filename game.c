@@ -390,8 +390,8 @@ void game ()
   lvl6Select_picture = download_sprite_("lvl6_lumineux.bmp");
   lvl7_picture = download_sprite_("lvl7.bmp");
   lvl7Select_picture = download_sprite_("lvl7_lumineux.bmp");
-  lvl8_picture = download_sprite_("lvlMassacre.bmp");
-  lvl8Select_picture = download_sprite_("lvlMassacre_lumineux.bmp");
+  lvl8_picture = download_sprite_("lvl8.bmp");
+  lvl8Select_picture = download_sprite_("lvl8_lumineux.bmp");
   /*ChangePage*/
   changePage_picture= download_sprite_("changePage.bmp");
   changePageSelect_picture = download_sprite_("changePage_lumineux.bmp");
